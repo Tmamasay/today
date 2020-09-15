@@ -3,7 +3,7 @@ import { userLogin, getMyMenus, loginOut } from '@/api/framework'
 import { removeToken, removeisOpen, removeRefreshToken, removeInfo, removecustomerId, getToken, setToken, setRefreshToken, getInfoo, setcustomerId } from '@/utils/auth'
 import { resetRouter, constantRoutes } from '@/router'
 import { ttyMD5 } from '@/utils'
-import Layout from '@/layout'
+// import Layout from '@/layout'
 
 const getDefaultState = () => {
   return {
@@ -121,78 +121,78 @@ const actions = {
   generateRoutes({ commit }) {
     return new Promise(resolve => {
       const accessedRouters = [// 组织架构
-        {
-          path: '/zzjg',
-          component: Layout,
-          children: [
-            {
-              path: 'bumen',
-              component: () => import('@/views/organizational_structure/index'),
-              name: 'bumen',
-              meta: { title: '部门管理', icon: 'example' }
+        // {
+        //   path: '/zzjg',
+        //   component: Layout,
+        //   children: [
+        //     {
+        //       path: 'bumen',
+        //       component: () => import('@/views/organizational_structure/index'),
+        //       name: 'bumen',
+        //       meta: { title: '部门管理', icon: 'example' }
 
-            }
-          ]
-        },
-        {
-          path: '/zxadmin',
-          component: Layout,
-          children: [
-            {
-              path: 'zuoxi',
-              component: () => import('@/views/seats_admin/index'),
-              name: 'zuoxi',
-              meta: { title: '坐席管理', icon: 'table' }
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: '/zxadmin',
+        //   component: Layout,
+        //   children: [
+        //     {
+        //       path: 'zuoxi',
+        //       component: () => import('@/views/seats_admin/index'),
+        //       name: 'zuoxi',
+        //       meta: { title: '坐席管理', icon: 'table' }
 
-            }
-          ]
-        },
-        {
-          path: '/cloudCall',
-          component: Layout,
-          children: [
-            {
-              path: 'call',
-              component: () => import('@/views/cloudCall/index'),
-              name: 'zuoxi',
-              meta: { title: '云呼叫', icon: 'link' }
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: '/cloudCall',
+        //   component: Layout,
+        //   children: [
+        //     {
+        //       path: 'call',
+        //       component: () => import('@/views/cloudCall/index'),
+        //       name: 'zuoxi',
+        //       meta: { title: '云呼叫', icon: 'link' }
 
-            }
-          ]
-        },
-        {
-          path: '/billManagement',
-          component: Layout,
-          children: [
-            {
-              path: 'bill',
-              component: () => import('@/views/billManagement/index'),
-              name: 'bill',
-              meta: { title: '话单管理', icon: 'form' }
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: '/billManagement',
+        //   component: Layout,
+        //   children: [
+        //     {
+        //       path: 'bill',
+        //       component: () => import('@/views/billManagement/index'),
+        //       name: 'bill',
+        //       meta: { title: '话单管理', icon: 'form' }
 
-            }
-          ]
-        },
-        {
-          path: '/quanxian',
-          component: Layout,
-          meta: { title: '权限管理', icon: 'example' },
-          children: [
-            {
-              path: 'jsadmin',
-              component: () => import('@/views/power/index'),
-              name: 'jsadmin',
-              children: [
-                {
-                  path: 'js',
-                  component: () => import('@/views/power/index'),
-                  name: 'js',
-                  meta: { title: '角色组', icon: 'example' }
-                }
-              ]
-            }
-          ]
-        }
+        //     }
+        //   ]
+        // },
+        // {
+        //   path: '/quanxian',
+        //   component: Layout,
+        //   meta: { title: '权限管理', icon: 'example' },
+        //   children: [
+        //     {
+        //       path: 'jsadmin',
+        //       component: () => import('@/views/power/index'),
+        //       name: 'jsadmin',
+        //       children: [
+        //         {
+        //           path: 'js',
+        //           component: () => import('@/views/power/index'),
+        //           name: 'js',
+        //           meta: { title: '角色组', icon: 'example' }
+        //         }
+        //       ]
+        //     }
+        //   ]
+        // }
       ]
       const accessedRouters2 = [
         // {
