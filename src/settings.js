@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: '泰霆云官网',
+  title: 'T+',
 
   /**
    * @type {boolean} true | false

@@ -44,7 +44,8 @@ export const componentsMap = {
   adminManager: () => import('@/views/userManager/manager'), // 角色管理
   private: () => import('@/views/userManager/deployment'), // 私有化部署
   orderManager: () => import('@/views/userManager/order'), // 订单列表
-  webStatistics: () => import('@/views/dashboard/busIndex') // 首页
+  // webStatistics: () => import('@/views/dashboard/busIndex') // 首页
+  webStatistics: () => import('@/views/Channel/index') // 首页
 
   // homePage: () => import('@/views/dashboard/busIndex'), // 控制台-首页
   // managerHomePage: () => import('@/views/dashboard/index'), // 控制台-首页
@@ -98,12 +99,13 @@ function generateRouter(item, isParent) {
   const ccomponent = isParent ? '1' : item.menuCode
   const otherU = item.menuCode
   // console.log('===========------------->')
-  // console.log(otherU)
+  console.log(fmeta)
   router = {
     path: otherU ? `/cxLrs/admin/${otherU}` : `#${item.id}`,
     name: item.menuName,
     meta: {
-      title: fmeta.title,
+      // title: fmeta.title,
+      title: `${otherU}`,
       icon: item.icon,
       id: item.id
     },

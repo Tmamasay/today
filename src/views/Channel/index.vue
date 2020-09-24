@@ -52,27 +52,38 @@
     </div>
     <!-- 用户操作 -->
     <el-dialog
-      title="用户操作"
+      title="新增"
       :visible.sync="dialogVisible_yh"
       :close-on-click-modal="false"
       width="30%"
     >
       <el-form v-if="dialogVisible_yh" ref="yhData" label-width="100px" :model="yhData" :rules="rulesyh">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="yhData.username" placeholder="请输入用户名" style="width:65%" />
+        <el-form-item label="姓名" prop="username">
+          <el-input v-model="yhData.name" placeholder="请输入姓名" />
         </el-form-item>
-        <el-form-item label="角色" prop="roleId">
-          <el-select v-model="yhData.roleId" style="width:65%" placeholder="请选择角色">
-            <el-option
-              v-for="item in options"
-              :key="item.id"
-              :label="item.roleName"
-              :value="item.id"
-            />
+        <el-form-item label="联系电话" prop="username">
+          <el-input v-model="yhData.phone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="实体店名称" prop="username">
+          <el-input v-model="yhData.entityName" placeholder="请输入实体店名称" />
+        </el-form-item>
+        <el-form-item label="实体店地址" prop="username">
+          <textarea v-model="yhData.entityAdress" placeholder="请输入实体店地址" cols="30" rows="10" />
+          <!-- <el-input v-model="yhData.entityAdress" placeholder="请输入实体店地址" /> -->
+        </el-form-item>
+        <el-form-item label="渠道商等级" prop="username">
+          <el-select v-model="yhData.grade" placeholder="请选择">
+            <el-option label="V1" value="1" />
+            <el-option label="V2" value="2" />
+            <el-option label="V3" value="3" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="!yhData.id" label="登录密码" prop="password">
-          <el-input v-model="yhData.password" type="password" style="width:65%" placeholder="请输入登录密码" />
+
+        <el-form-item label="手续费率" prop="username">
+          <el-input v-model="yhData.fee" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="登录密码" prop="password">
+          <el-input v-model="yhData.password" type="password" placeholder="请输入登录密码" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -93,9 +104,15 @@ export default {
       options: [],
       dialogVisible_yh: false,
       yhData: {
-        password: '',
-        roleId: '',
-        username: ''
+        name: '', // 姓名
+        phone: '', // 电话
+        entityName: '', // 实体店名字
+        entityAdress: '', // 实体店地址
+        businessLicense: '', // 营业执照
+        licence: '', // 许可证
+        fee: '', // 手续费率
+        grade: '', // 等级
+        password: ''// 登陆密码
       },
       rulesyh: {
         username: [
