@@ -1,7 +1,7 @@
 <template>
   <div class="xfjl_box shaowAll">
     <div class="toolS">
-      <el-button type="primary" style="margin-bottom:20px" @click="addZx">新增管理员</el-button>
+      <el-button type="primary" style="margin-bottom:20px" @click="addZx">新增渠道商</el-button>
       <el-form :inline="true" class="demo-form-inline">
         <el-form-item label="">
           <el-input v-model="userName" placeholder="请输入管理员" />
@@ -23,18 +23,26 @@
         width="50"
         label="序号"
       />
-      <el-table-column prop="createTime" width="180" label="添加时间">
+      <!-- <el-table-column prop="createTime" width="180" label="添加时间">
         <template slot-scope="scope">
           {{ formatDate(scope.row.createTime) }}
         </template>
-      </el-table-column>
-      <el-table-column prop="userName" label="用户名" />
-      <el-table-column prop="roleName" label="角色" />
+      </el-table-column> -->
+      <el-table-column prop="name" label="测试渠道商" />
+      <el-table-column prop="account" label="账号" />
+      <el-table-column prop="industry" label="行业" />
+      <el-table-column prop="grade" label="等级" />
+      <el-table-column prop="entityName" label="实体店名字" />
+      <el-table-column prop="entityAdress" label="实体店地址" />
+      <el-table-column prop="contacts" label="联系人" />
+      <el-table-column prop="phone" label="联系电话" />
       <el-table-column
         label="编辑"
       >
         <template slot-scope="scope">
           <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">编辑</span>
+          <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">冻结</span>
+          <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">充值</span>
           <span style="color:red;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">删除</span>
         </template>
       </el-table-column>
@@ -50,44 +58,50 @@
         @current-change="handleCurrentChange"
       />
     </div>
-    <!-- 用户操作 -->
+    <!-- 渠道商操作 -->
     <el-dialog
-      title="新增"
+      title="渠道商操作"
       :visible.sync="dialogVisible_yh"
       :close-on-click-modal="false"
-      width="30%"
+      width="40%"
     >
-      <el-form v-if="dialogVisible_yh" ref="yhData" label-width="100px" :model="yhData" :rules="rulesyh">
-        <el-form-item label="姓名" prop="username">
-          <el-input v-model="yhData.name" placeholder="请输入姓名" />
+      <el-form v-if="dialogVisible_yh" ref="yhData" label-position="right" :inline="true" label-width="120px" :model="yhData" :rules="rulesyh">
+        <el-form-item label="渠道商名称" prop="name">
+          <el-input v-model="yhData.name" placeholder="请输入渠道商名称" />
         </el-form-item>
-        <el-form-item label="联系电话" prop="username">
-          <el-input v-model="yhData.phone" placeholder="请输入联系电话" />
+        <el-form-item label="渠道商账号" prop="account">
+          <el-input v-model="yhData.account" placeholder="请输入姓名" />
         </el-form-item>
-        <el-form-item label="行业类别" prop="username">
-          <el-select v-model="yhData.grade" placeholder="请选择">
+        <el-form-item label="行业类别" prop="industry">
+          <el-select v-model="yhData.industry" placeholder="请选择" style="width:90%">
+            <el-option label="超市" value="1" />
+            <el-option label="奶茶" value="2" />
+            <el-option label="母婴" value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="渠道商等级" prop="grade" style="margin-left:-15px">
+          <el-select v-model="yhData.grade" placeholder="请选择" style="width:90%">
             <el-option label="V1" value="1" />
             <el-option label="V2" value="2" />
             <el-option label="V3" value="3" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="渠道商等级" prop="username">
-          <el-select v-model="yhData.grade" placeholder="请选择">
-            <el-option label="V1" value="1" />
-            <el-option label="V2" value="2" />
-            <el-option label="V3" value="3" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="实体店名称" prop="username">
-          <el-input v-model="yhData.entityName" placeholder="请输入实体店名称" />
-        </el-form-item>
-        <el-form-item label="实体店地址" prop="username">
-          <textarea v-model="yhData.entityAdress" placeholder="请输入实体店地址" cols="30" rows="10" />
-          <!-- <el-input v-model="yhData.entityAdress" placeholder="请输入实体店地址" /> -->
         </el-form-item>
 
-        <el-form-item label="手续费率" prop="username">
-          <el-input v-model="yhData.fee" placeholder="请输入用户名" />
+        <el-form-item label="实体店名称" prop="entityName">
+          <el-input v-model="yhData.entityName" placeholder="请输入实体店名" />
+        </el-form-item>
+        <el-form-item label="实体店地址" prop="entityAdress">
+          <!-- <textarea v-model="yhData.entityAdress" style="border:1px solid #DCDFE6" placeholder="请输入实体店地址" cols="30" rows="4" /> -->
+          <el-input v-model="yhData.entityAdress" placeholder="请输入实体店地址" />
+        </el-form-item>
+        <el-form-item label="联系人" prop="contacts">
+          <el-input v-model="yhData.contacts" placeholder="请输入联系人" />
+        </el-form-item>
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="yhData.phone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="手续费率" prop="fee">
+          <el-input v-model="yhData.fee" placeholder="请输入手续费率（最低千分之六）" />
         </el-form-item>
         <el-form-item label="登录密码" prop="password">
           <el-input v-model="yhData.password" type="password" placeholder="请输入登录密码" />
@@ -111,29 +125,64 @@ export default {
       options: [],
       dialogVisible_yh: false,
       yhData: {
-        name: '', // 姓名
-        phone: '', // 电话
+        name: '', // 渠道商名称
+        account: '', // 账号
+        industry: '', // 行业
+        grade: '', // 等级
         entityName: '', // 实体店名字
         entityAdress: '', // 实体店地址
-        businessLicense: '', // 营业执照
-        licence: '', // 许可证
+        contacts: '', // 联系人
+        phone: '', // 联系电话
         fee: '', // 手续费率
-        grade: '', // 等级
-        password: ''// 登陆密码
+        password: '' // 登陆密码
+        // businessLicense: '', // 营业执照
+        // licence: '', // 许可证
       },
       rulesyh: {
-        username: [
-          { required: true, message: '请输入用户名', trigger: 'blur' }
+        name: [
+          { required: true, message: '请输入渠道商名称', trigger: 'blur' }
         ],
-        roleId: [
-          { required: true, message: '请选择角色', trigger: 'change' }
+        account: [
+          { required: true, message: '请输入渠道商账号', trigger: 'blur' }
+        ],
+        industry: [
+          { required: true, message: '请选择所属行业', trigger: 'change' }
+        ],
+        grade: [
+          { required: true, message: '请选择渠道商等级', trigger: 'change' }
+        ],
+        entityName: [
+          { required: true, message: '请输入实体店名字', trigger: 'blur' }
+        ],
+        entityAdress: [
+          { required: true, message: '请输入实体店地址', trigger: 'blur' }
+        ],
+        contacts: [
+          { required: true, message: '请输入联系人', trigger: 'blur' }
+        ],
+        phone: [
+          { required: true, message: '请输入联系电话', trigger: 'blur' }
+        ],
+        fee: [
+          { required: true, message: '请输入手续费率', trigger: 'blur' }
         ],
         password: [
-          { required: true, message: '请输入登录密码', trigger: 'change' }
+          { required: true, message: '请输入登陆密码', trigger: 'blur' }
         ]
 
       },
-      datalist: [],
+      datalist: [
+        {
+          name: '测试渠道商',
+          account: 'chengXu',
+          industry: '奶茶',
+          grade: 'V2',
+          entityName: '一只酸奶牛',
+          entityAdress: '重庆市南岸区万达广场',
+          contacts: '程旭',
+          phone: '18883630318'
+        }
+      ],
       yueNum: 0,
       Size: 10, // 一页多少条
       Current: 1, // 页码
@@ -144,7 +193,7 @@ export default {
     }
   },
   mounted() {
-    this.getlist()
+    // this.getlist()
   },
   methods: {
     removeZX(row) {

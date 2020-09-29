@@ -61,8 +61,8 @@ export default {
   mounted() {
     console.log('111111111111111111')
     console.log(this.$route)
-    if (this.$route !== '/cxLrs/admin/index') {
-      this.$router.push('/cxLrs/admin/index')
+    if (this.$route !== '/cxLrs/admin/index/main') {
+      this.$router.push('/cxLrs/admin/index/main')
       // this.activeMenu()
     }
   }

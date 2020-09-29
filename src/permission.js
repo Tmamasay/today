@@ -44,7 +44,7 @@ router.beforeEach(async(to, from, next) => {
           // selfaddRoutes(accessRoutes)
           // debugger
           // next({ ...to, replace: true })
-          next({ path: '/cxLrs/admin/index' })
+          next({ path: '/cxLrs/admin/index/main' })
           // next({ ...to, replace: true })
         } catch (error) {
           // 移除令牌并转到登录页以重新登录

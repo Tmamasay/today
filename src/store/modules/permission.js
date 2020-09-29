@@ -48,14 +48,14 @@ export function filterAsyncRoutes(routes, roles) {
 }
 // 定义子路由跳转页面
 export const componentsMap = {
-  // roleManager: () => import('@/views/power/index'), // 角色管理
-  // userManager: () => import('@/views/userManager/userList'), // 会员管理-会员列表
-  // newManager: () => import('@/views/Notice/index'), // 资讯
-  // adminManager: () => import('@/views/userManager/manager'), // 角色管理
+  // globalGoodsWarehouse: () => import('@/views/power/index'), // 角色管理
+  category: () => import('@/views/userManager/userList'), // 会员管理-会员列表
+  user: () => import('@/views/Notice/index'), // 资讯
+  payRecord: () => import('@/views/userManager/manager'), // 角色管理
   globalGoodsWarehouse: () => import('@/views/userManager/deployment'), // 私有化部署
-  payRecord: () => import('@/views/userManager/order'), // 订单列表
+  // main: () => import('@/views/userManager/order'), // 订单列表
   // webStatistics: () => import('@/views/dashboard/busIndex') // 首页
-  channelMerchantsManager: () => import('@/views/Channel/index') // 首页
+  main: () => import('@/views/Channel/index') // 首页
 
   // homePage: () => import('@/views/dashboard/busIndex'), // 控制台-首页
   // managerHomePage: () => import('@/views/dashboard/index'), // 控制台-首页
@@ -103,7 +103,6 @@ function generateRouter(item, isParent) {
   // })
   // setqxbutton(qxbuttonlist)
   var router = {}
-  debugger
   const fmeta = { title: item.name, affix: false }
   // const cmeta = { title: `${item.menuName}` }
   const ccomponent = isParent ? '1' : getComponent(item.path)
@@ -139,27 +138,27 @@ function convertRouter(asyncRouterMap) {
     var zxgl_icon = ['zxgl', 'zxgl1', 'zxglhis']// 坐席管理
     var hdgl_icon = ['hdgl', 'hdgl_zl', 'hdgl_gr']// 话单管理
     var xtgl_icon = ['xtgl', 'xtgl_js']// 系统管理
-    var mes_icon = ['message']// 系统管理
+    var mes_icon = ['zzFw']// 系统管理
     var phone_icon = ['phone']// 系统管理
     asyncRouterMap.forEach(item => {
       // this.set(item, 0, arricon[0])
-      switch (item.menuName) {
-        case '网站统计':
+      switch (item.name) {
+        case '首页':
           item.icon = kzt_icon[0]
           break
-        case '订单管理':
+        case '渠道商管理':
           item.icon = zzjg_icon[0]
           break
-        case '会员管理':
+        case '商品库管理':
           item.icon = zxgl_icon[0]
           break
-        case '新闻资讯':
+        case '广告列表':
           item.icon = hdgl_icon[0]
           break
-        case '系统管理':
+        case '管理员管理':
           item.icon = xtgl_icon[0]
           break
-        case '挂机短信':
+        case '增值服务':
           item.icon = mes_icon[0]
           break
         case '号码库':
@@ -191,7 +190,7 @@ function convertRouter(asyncRouterMap) {
     // }
   })
   console.log(accessedRouters)
-  accessedRouters.push({ path: '/cxLrs/admin/index', redirect: '/cxLrs/admin/index', hidden: true })
+  // accessedRouters.push({ path: '/cxLrs/admin/index', redirect: '/cxLrs/admin/index', hidden: true })
   return accessedRouters
 }
 
