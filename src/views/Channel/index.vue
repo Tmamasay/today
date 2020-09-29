@@ -64,12 +64,12 @@
         <el-form-item label="联系电话" prop="username">
           <el-input v-model="yhData.phone" placeholder="请输入联系电话" />
         </el-form-item>
-        <el-form-item label="实体店名称" prop="username">
-          <el-input v-model="yhData.entityName" placeholder="请输入实体店名称" />
-        </el-form-item>
-        <el-form-item label="实体店地址" prop="username">
-          <textarea v-model="yhData.entityAdress" placeholder="请输入实体店地址" cols="30" rows="10" />
-          <!-- <el-input v-model="yhData.entityAdress" placeholder="请输入实体店地址" /> -->
+        <el-form-item label="行业类别" prop="username">
+          <el-select v-model="yhData.grade" placeholder="请选择">
+            <el-option label="V1" value="1" />
+            <el-option label="V2" value="2" />
+            <el-option label="V3" value="3" />
+          </el-select>
         </el-form-item>
         <el-form-item label="渠道商等级" prop="username">
           <el-select v-model="yhData.grade" placeholder="请选择">
@@ -77,6 +77,13 @@
             <el-option label="V2" value="2" />
             <el-option label="V3" value="3" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="实体店名称" prop="username">
+          <el-input v-model="yhData.entityName" placeholder="请输入实体店名称" />
+        </el-form-item>
+        <el-form-item label="实体店地址" prop="username">
+          <textarea v-model="yhData.entityAdress" placeholder="请输入实体店地址" cols="30" rows="10" />
+          <!-- <el-input v-model="yhData.entityAdress" placeholder="请输入实体店地址" /> -->
         </el-form-item>
 
         <el-form-item label="手续费率" prop="username">

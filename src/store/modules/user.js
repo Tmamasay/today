@@ -1,6 +1,6 @@
 // import { logout } from '@/api/user'
-import { userLogin, getMyMenus, loginOut } from '@/api/framework'
-import { removeToken, removeisOpen, removeRefreshToken, removeInfo, removecustomerId, getToken, setToken, setRefreshToken, getInfoo, setcustomerId } from '@/utils/auth'
+import { userLogin, getMyMenus, loginOut } from '@/api/user'
+import { removeToken, removeisOpen, removeRefreshToken, removeInfo, removecustomerId, getToken, setToken, getInfoo } from '@/utils/auth'
 import { resetRouter, constantRoutes } from '@/router'
 import { ttyMD5 } from '@/utils'
 // import Layout from '@/layout'
@@ -49,43 +49,48 @@ const actions = {
         param: {
           username: username.trim(),
           password: ttyMD5(password),
-          sysName: 'tyteen',
+          sysName: 'tyteen1',
           loginType: 'tyteen',
           clientPassword: 'nfjkMaHiO4Wz42Fb1jNVWlilUzBXxwqD'
         }
       }
       userLogin(data).then(response => {
         console.log(response)
-        if (response.statusCode === '00000') {
-          commit('SET_TOKEN', response.data.access_token)
-          setToken(`Bearer ${response.data.access_token}`)
-          setRefreshToken(response.data.refresh_token)
-          console.log(response.data.access_token)
-          setcustomerId(response.data.customerId)
-        }
+        // if (response.statusCode === '00000') {
+        //   commit('SET_TOKEN', response.data.access_token)
+        //   setToken(`Bearer ${response.data.access_token}`)
+        //   setRefreshToken(response.data.refresh_token)
+        //   console.log(response.data.access_token)
+        //   setcustomerId(response.data.customerId)
+        // }
         resolve(response)
       }).catch(error => {
         reject(error)
       })
     })
   },
-
+  refreshToken({ commit }, token) {
+    commit('SET_TOKEN', token)
+    setToken(token)
+  },
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      var data = {
-        param: {
-          sysName: 'tyteen'
-        }
-      }
-      getMyMenus(data).then(response => {
-        if (!response.data || !response.data.length) {
+      // var data = {
+      //   param: {
+      //     sysName: 'tyteen'
+      //   }
+      // }
+      getMyMenus().then(response => {
+        if (!response.data || !response.data.children.length) {
           reject('权限校验失败，请联系管理员配置权限')
         }
         // const { name, avatar } = data
         // setInfo(name)
-        commit('SET_NAME', response.statusCode)
+        commit('SET_NAME', response.data.name)
         // commit('SET_AVATAR', avatar)
+        console.log(response.data)
+        console.log('-0000000000-')
         resolve(response)
       }).catch(error => {
         reject(error)

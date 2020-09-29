@@ -16,6 +16,16 @@ function hasPermission(roles, route) {
   }
 }
 
+function getComponent(component) {
+  const reg = /(http|https):\/\/([\w.]+\/?)\S*/
+  if (reg.test(component)) {
+    return `otherUrl`
+  } else {
+    const components = component.split('/')
+    return components[components.length - 1]
+  }
+}
+
 /**
  * 递归过滤异步路由表，返回符合用户角色权限的路由表
  * @param routes asyncRoutes
@@ -38,14 +48,14 @@ export function filterAsyncRoutes(routes, roles) {
 }
 // 定义子路由跳转页面
 export const componentsMap = {
-  roleManager: () => import('@/views/power/index'), // 角色管理
-  userManager: () => import('@/views/userManager/userList'), // 会员管理-会员列表
-  newManager: () => import('@/views/Notice/index'), // 资讯
-  adminManager: () => import('@/views/userManager/manager'), // 角色管理
-  private: () => import('@/views/userManager/deployment'), // 私有化部署
-  orderManager: () => import('@/views/userManager/order'), // 订单列表
+  // roleManager: () => import('@/views/power/index'), // 角色管理
+  // userManager: () => import('@/views/userManager/userList'), // 会员管理-会员列表
+  // newManager: () => import('@/views/Notice/index'), // 资讯
+  // adminManager: () => import('@/views/userManager/manager'), // 角色管理
+  globalGoodsWarehouse: () => import('@/views/userManager/deployment'), // 私有化部署
+  payRecord: () => import('@/views/userManager/order'), // 订单列表
   // webStatistics: () => import('@/views/dashboard/busIndex') // 首页
-  webStatistics: () => import('@/views/Channel/index') // 首页
+  channelMerchantsManager: () => import('@/views/Channel/index') // 首页
 
   // homePage: () => import('@/views/dashboard/busIndex'), // 控制台-首页
   // managerHomePage: () => import('@/views/dashboard/index'), // 控制台-首页
@@ -94,24 +104,27 @@ function generateRouter(item, isParent) {
   // setqxbutton(qxbuttonlist)
   var router = {}
   debugger
-  const fmeta = { title: item.menuName, affix: false }
+  const fmeta = { title: item.name, affix: false }
   // const cmeta = { title: `${item.menuName}` }
-  const ccomponent = isParent ? '1' : item.menuCode
-  const otherU = item.menuCode
+  const ccomponent = isParent ? '1' : getComponent(item.path)
+  const otherU = item.path
   // console.log('===========------------->')
   console.log(fmeta)
   router = {
-    path: otherU ? `/cxLrs/admin/${otherU}` : `#${item.id}`,
-    name: item.menuName,
+    path: otherU ? `/cxLrs/admin${otherU}` : `#${item.id}`,
+    name: item.name,
     meta: {
-      // title: fmeta.title,
-      title: `${otherU}`,
+      title: fmeta.title,
+      // title: `${otherU}`,
       icon: item.icon,
       id: item.id
     },
     // component: isParent ? Layout : () => import(item.component)
     component: isParent ? Layout : componentsMap[ccomponent]
   }
+  console.log(ccomponent)
+  console.log(componentsMap[ccomponent])
+  console.log('---------')
   return router
 }
 /**
@@ -159,41 +172,6 @@ function convertRouter(asyncRouterMap) {
       var children = []
       if (item.children.length) {
         item.children.forEach(child => {
-          console.log(child)
-          // switch (child.menuName) {
-          //   case '首页':
-          //     child.icon = kzt_icon[2]
-          //     break
-          //   case '企业管理':
-          //     child.icon = kzt_icon[4]
-          //     break
-          //   case '充值':
-          //     child.icon = kzt_icon[1]
-          //     break
-          //   case '组织架构':
-          //     child.icon = zzjg_icon[1]
-          //     break
-          //   case '坐席管理':
-          //     child.icon = zxgl_icon[1]
-          //     break
-          //   case '坐席历史通话记录':
-          //     child.icon = zxgl_icon[2]
-          //     break
-          //   case '话单总览':
-          //     child.icon = hdgl_icon[1]
-          //     break
-          //   case '个人话单':
-          //     child.icon = hdgl_icon[2]
-          //     break
-          //   case '角色管理':
-          //     child.icon = xtgl_icon[1]
-          //     break
-          //   case '消费记录':
-          //     child.icon = kzt_icon[3]
-          //     break
-          //   default:
-          //     break
-          // }
           children.push(generateRouter(child, false))
         })
       }
@@ -213,7 +191,7 @@ function convertRouter(asyncRouterMap) {
     // }
   })
   console.log(accessedRouters)
-  accessedRouters.push({ path: '/cxLrs/admin/webStatistics', redirect: '/cxLrs/admin/webStatistics', hidden: true })
+  accessedRouters.push({ path: '/cxLrs/admin/index', redirect: '/cxLrs/admin/index', hidden: true })
   return accessedRouters
 }
 
@@ -240,14 +218,15 @@ const actions = {
       // debugger
       console.log('================>')
       console.log(data)
-      const asyncRouterMap = data.data
-      console.log(data.data)
+      const asyncRouterMap = data.data.children
+      console.log(data.data.children)
       console.log('程旭')
       const accessedRouters = convertRouter(asyncRouterMap)
-      console.log(accessedRouters)
-      console.log('程旭')
+      // console.log(accessedRouters)
+      // console.log('程旭')
       commit('SET_ROUTES', accessedRouters)
       commit('SET_SIGN', true)
+      console.log()
       // debugger
       resolve(accessedRouters)
     })

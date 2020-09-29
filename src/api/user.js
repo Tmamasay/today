@@ -1,24 +1,18 @@
 import request from '@/utils/request'
 
-export function login(data) {
+// 用户登录
+export function userLogin(data) {
   return request({
-    url: '/vue-admin-template/user/login',
+    url: '/tpp-admin/admin/login',
     method: 'post',
     data
   })
 }
-
-export function getInfo(token) {
+// 查询当前登录用户的菜单
+export function getMyMenus(data) {
   return request({
-    url: '/vue-admin-template/user/info',
-    method: 'get',
-    params: { token }
-  })
-}
-
-export function logout() {
-  return request({
-    url: '/vue-admin-template/user/logout',
-    method: 'post'
+    url: '/tpp-admin/admin/menu/tree',
+    method: 'post',
+    data
   })
 }

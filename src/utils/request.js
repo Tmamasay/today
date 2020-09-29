@@ -3,7 +3,7 @@ import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 // import { removeToken, removeInfo, getRefreshToken, removeRefreshToken, removecustomerId } from '@/utils/auth'
-import { getRefreshToken } from '@/utils/auth'
+// import { getRefreshToken } from '@/utils/auth'
 let needLoadingRequestCount = 0
 // 创建axios实例
 const service = axios.create({
@@ -27,7 +27,7 @@ service.interceptors.request.use(
       // 请根据实际情况修改
       // config.headers['access_token'] = getToken()
       config.headers['Authorization'] = getToken()
-      config.headers['refresh_token'] = getRefreshToken()
+      // config.headers['refresh_token'] = getRefreshToken()
     }
     needLoadingRequestCount++
     return config
@@ -52,9 +52,11 @@ service.interceptors.response.use(
    * 您还可以通过HTTP状态代码判断状态
    */
   response => {
+    store.dispatch('user/refreshToken', response.headers.authorization)
+    // console.log(response.headers.authorization)
     const res = response.data
-    console.log('88888888888888888888')
-    console.log(res)
+    // console.log('88888888888888888888')
+    // console.log(res)
     // 如果自定义代码不是00000，则判断为错误。
     if (res.statusCode && res.statusCode !== '00000') {
       // if (response.statusCode === 401) {
