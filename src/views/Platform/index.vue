@@ -1,174 +1,162 @@
 <template>
   <div class="hw_admin_box shaowAll">
-    <div class="toolS">
-      <p class="Ptitle">基本信息 <span class="ptFS">请您遵守国家相关规定，切勿上传低俗色情、暴力恐怖、谣言诈骗、侵权盗版等相关内容</span></p>
-    </div>
-    <div class="baseSt">
-      <el-form ref="addZxData" label-position="left" label-width="80px" :model="addZxData" :rules="rulesZx">
-        <el-form-item label="缩略图：" prop="noticeImg">
-          <div>
-            <el-upload
-              list-type="picture-card"
-              action
-              :file-list="fileList"
-              :show-file-list="true"
-              :http-request="uploadFile"
-              :limit="1"
-              :on-change="handlePreview"
-              :on-success="handleSuccess"
-            >
-              <i class="el-icon-plus" />
-              <div slot="tip" class="el-upload__tip">
-                提示：支持格式JPG，JPEG,PNG,PDF
-              </div>
-            </el-upload>
-          </div>
-        </el-form-item>
-        <el-form-item label="商品名" prop="remark">
-          <el-input v-model="addZxData.remark" placeholder="请输入摘要" />
-        </el-form-item>
-        <el-form-item label="所属分类" prop="remark">
-          <el-select v-model="addZxData.remark" placeholder="请选择" style="width:90%">
-            <el-option label="超市" value="1" />
-            <el-option label="奶茶" value="2" />
-            <el-option label="母婴" value="3" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="标签" prop="title">
-          <el-tag
-            v-for="tag in dynamicTags"
-            :key="tag"
-            closable
-            :disable-transitions="false"
-            type="info"
-            @close="handleClose(tag)"
-          >
-            {{ tag }}
-          </el-tag>
-          <el-input
-            v-if="inputVisible"
-            ref="saveTagInput"
-            v-model="inputValue"
-            class="input-new-tag"
-            size="small"
-            @keyup.enter.native="handleInputConfirm"
-            @blur="handleInputConfirm"
-          />
-          <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加标签</el-button>
-        </el-form-item>
-        <el-form-item label="商品规格" prop="remark">
-          <div class="guiGe">
-            <div class="guiOne">
-              <span>规格组：</span>
-              <el-tag
-                v-for="tag in GuienamicTags"
-                :key="tag"
-                closable
-                :disable-transitions="false"
-                type="success"
-                @close="handleGuieClose(tag)"
+    <div v-if="+step===1">
+      <div class="toolS">
+        <p class="Ptitle">商品基本信息 <span class="ptFS">请您遵守国家相关规定，切勿上传低俗色情、暴力恐怖、谣言诈骗、侵权盗版等相关内容</span></p>
+      </div>
+      <div class="baseSt">
+        <el-form ref="addZxData" label-position="left" label-width="80px" :model="addZxData" :rules="rulesZx">
+          <el-form-item label="缩略图：" prop="noticeImg">
+            <div>
+              <el-upload
+                list-type="picture-card"
+                action
+                :file-list="fileList"
+                :show-file-list="true"
+                :http-request="uploadFile"
+                :limit="1"
+                :on-change="handlePreview"
+                :on-success="handleSuccess"
               >
-                {{ tag }}
-              </el-tag>
-              <el-input
-                v-if="GuieinputVisible"
-                ref="saveGuieTagInput"
-                v-model="GuieinputValue"
-                class="input-new-tag"
-                size="small"
-                @keyup.enter.native="handleGuieInputConfirm"
-                @blur="handleGuieInputConfirm"
-              />
-              <el-button v-else class="button-new-tag" size="small" @click="showGuieInput">+ 添加规格名</el-button>
+                <i class="el-icon-plus" />
+                <div slot="tip" class="el-upload__tip">
+                  提示：支持格式JPG，JPEG,PNG,PDF
+                </div>
+              </el-upload>
             </div>
-            <div v-for="(item,index) in GuienamicTags" :key="item" class="guiValue">
-              <p>规格名：<span class="guGe">{{ item }}</span></p>
-
-              <span v-if="SpecnamicTags.length&&SpecnamicTags[index]">
-                <span>规格值：</span>
+          </el-form-item>
+          <el-form-item label="商品名" prop="remark">
+            <el-input v-model="addZxData.remark" placeholder="请输入摘要" />
+          </el-form-item>
+          <el-form-item label="所属分类" prop="remark">
+            <el-select v-model="addZxData.remark" placeholder="请选择" style="width:90%">
+              <el-option label="超市" value="1" />
+              <el-option label="奶茶" value="2" />
+              <el-option label="母婴" value="3" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="标签" prop="title">
+            <el-tag
+              v-for="tag in dynamicTags"
+              :key="tag"
+              closable
+              :disable-transitions="false"
+              type="info"
+              @close="handleClose(tag)"
+            >
+              {{ tag }}
+            </el-tag>
+            <el-input
+              v-if="inputVisible"
+              ref="saveTagInput"
+              v-model="inputValue"
+              class="input-new-tag"
+              size="small"
+              @keyup.enter.native="handleInputConfirm"
+              @blur="handleInputConfirm"
+            />
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加标签</el-button>
+          </el-form-item>
+          <el-form-item label="商品规格" prop="remark">
+            <div class="guiGe">
+              <div class="guiOne">
+                <span>规格组：</span>
                 <el-tag
-                  v-for="tag in SpecnamicTags[index].value"
+                  v-for="tag in GuienamicTags"
                   :key="tag"
                   closable
                   :disable-transitions="false"
-                  type="warning"
-                  @close="handleSpecClose(tag)"
+                  type="success"
+                  @close="handleGuieClose(tag)"
                 >
                   {{ tag }}
                 </el-tag>
-              </span>
-              <el-input
-                v-if="SpecinputVisible&&SpecinputIndex===index"
-                ref="saveSpecInput"
-                v-model="SpecinputValue"
-                class="input-new-tag"
-                size="small"
-                @keyup.enter.native="handleSpecInputConfirm(item,index)"
-                @blur="handleSpecInputConfirm(item,index)"
-              />
-              <el-button v-else class="button-new-tag" size="small" @click="showSpecInput(index)">+ 添加规格值</el-button>
+                <el-input
+                  v-if="GuieinputVisible"
+                  ref="saveGuieTagInput"
+                  v-model="GuieinputValue"
+                  class="input-new-tag"
+                  size="small"
+                  @keyup.enter.native="handleGuieInputConfirm"
+                  @blur="handleGuieInputConfirm"
+                />
+                <el-button v-else class="button-new-tag" size="small" @click="showGuieInput">+ 添加规格名</el-button>
+              </div>
+              <div v-for="(item,index) in GuienamicTags" :key="item" class="guiValue">
+                <p>规格名：<span class="guGe">{{ item }}</span></p>
+
+                <span v-if="SpecnamicTags.length&&SpecnamicTags[index]">
+                  <span>规格值：</span>
+                  <el-tag
+                    v-for="tag in SpecnamicTags[index].value"
+                    :key="tag"
+                    closable
+                    :disable-transitions="false"
+                    type="warning"
+                    @close="handleSpecClose(tag)"
+                  >
+                    {{ tag }}
+                  </el-tag>
+                </span>
+                <el-input
+                  v-if="SpecinputVisible&&SpecinputIndex===index"
+                  ref="saveSpecInput"
+                  v-model="SpecinputValue"
+                  class="input-new-tag"
+                  size="small"
+                  @keyup.enter.native="handleSpecInputConfirm(item,index)"
+                  @blur="handleSpecInputConfirm(item,index)"
+                />
+                <el-button v-else class="button-new-tag" size="small" @click="showSpecInput(index)">+ 添加规格值</el-button>
+              </div>
             </div>
-          </div>
-        </el-form-item>
-        <el-form-item label="正文：" prop="textBody">
-          <EditorImage v-if="dialogVisible" :value="addZxData.textBody" @editlisten="geteditS" />
-        </el-form-item>
-        <el-form-item label="规格明细">
-          <div>
-            <div className="table-content">
-              <table className="spec-table" border="1">
-                <thead>
-                  <tr>
-                    <th v-for="item in GuienamicTags" :key="item">{{ item }}</th>
-                    <th>SKU编码</th>
-                    <th>单买价格</th>
-                    <th>拼团价格</th>
-                    <!-- <th>服务佣金</th> -->
-                    <th>可售库存</th>
-                  </tr>
-                  <tr v-for="item1 in tableData" :key="item1">
-                    <td v-for="item2 in item1" :key="item2">{{ item2 }}</td>
-                    <td><el-input placeholder="请输入内容" size="small" /></td>
-                    <td><el-input placeholder="请输入内容" size="small" /></td>
-                    <td><el-input placeholder="请输入内容" size="small" /></td>
-                    <!-- <td><el-input placeholder="请输入内容" size="small" /></td> -->
-                    <td><el-input placeholder="请输入内容" size="small" /></td>
-                  </tr>
+          </el-form-item>
+          <el-form-item label="介绍：" prop="textBody">
+            <EditorImage :value="addZxData.textBody" @editlisten="geteditS" />
+          </el-form-item>
+          <!-- <el-form-item label="规格明细" /> -->
+          <el-form-item>
+            <el-button type="primary" @click="zx_submit('addZxData')">下一步</el-button>
+          </el-form-item>
+        </el-form>
 
-                </thead>
-              </table>
-            <!-- <el-table
-              :data="tableData"
-              :span-method="objectSpanMethod"
-              border
-              style="width: 100%; margin-top: 20px"
-            >
-              <el-table-column
-                prop="name"
-                label="规格名"
-              />
+        <!-- <div slot="footer" class="dialog-footer">
 
-              <el-table-column
-                prop="value"
-                label="规格值"
-              />
-              <el-table-column
-                prop="amount2"
-                label="数值 2（元）"
-              />
-              <el-table-column
-                prop="amount3"
-                label="数值 3（元）"
-              />
-            </el-table> -->
-            </div>
-          </div></el-form-item>
-
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="zx_submit('addZxData')">确 定</el-button>
+        </div> -->
       </div>
     </div>
+    <div v-if="+step===2">
+      <el-button type="primary" @click="goPre">返回上一步</el-button>
+      <div class="toolS">
+        <p class="Ptitle">商品详细信息<span class="ptFS">请您按照实际情况填写商品的SKU信息及价格</span> </p>
+      </div>
+      <div>
+        <div className="table-content">
+          <table className="spec-table" border="1">
+            <thead>
+              <tr>
+                <th v-for="item in GuienamicTags" :key="item">{{ item }}</th>
+                <th>SKU编码</th>
+                <th>单买价格</th>
+                <th>拼团价格</th>
+                <!-- <th>服务佣金</th> -->
+                <th>可售库存</th>
+              </tr>
+              <tr v-for="item1 in tableData" :key="item1">
+                <td v-for="item2 in item1" :key="item2">{{ item2 }}</td>
+                <td><el-input placeholder="请输入内容" size="small" /></td>
+                <td><el-input placeholder="请输入内容" size="small" /></td>
+                <td><el-input placeholder="请输入内容" size="small" /></td>
+                <!-- <td><el-input placeholder="请输入内容" size="small" /></td> -->
+                <td><el-input placeholder="请输入内容" size="small" /></td>
+              </tr>
+
+            </thead>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <el-dialog
       title="资讯操作"
       :visible.sync="dialogVisible"
@@ -234,6 +222,7 @@ export default {
   components: { EditorImage },
   data() {
     return {
+      step: 1,
       tableData: [],
 
       // 标签
@@ -460,8 +449,9 @@ export default {
     // end=------------>
 
     goPre(row) {
+      this.step = 1
       // this.$router.push({ path: '/preDetaill', query: { newsId: row.id }})
-      this.$router.push({ path: '/Platform', query: { newsId: row.id }})
+      // this.$router.push({ path: '/Platform', query: { newsId: row.id }})
     },
     goEdit(row) {
       this.dialogVisible = true
@@ -576,6 +566,7 @@ export default {
     },
     // 新增
     async zx_submit(formName) {
+      this.step = 2
       console.log(this.SpecnamicTags)
       // const _this = this
       // await _this.$refs[formName].validate((valid) => {
