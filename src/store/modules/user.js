@@ -2,7 +2,7 @@
 import { userLogin, getMyMenus, loginOut } from '@/api/user'
 import { removeToken, removeisOpen, removeRefreshToken, removeInfo, removecustomerId, getToken, setToken, getInfoo } from '@/utils/auth'
 import { resetRouter, constantRoutes } from '@/router'
-import { ttyMD5 } from '@/utils'
+// import { ttyMD5 } from '@/utils'
 // import Layout from '@/layout'
 
 const getDefaultState = () => {
@@ -46,13 +46,14 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       var data = {
-        param: {
-          username: username.trim(),
-          password: ttyMD5(password),
-          sysName: 'tyteen1',
-          loginType: 'tyteen',
-          clientPassword: 'nfjkMaHiO4Wz42Fb1jNVWlilUzBXxwqD'
-        }
+
+        loginName: username.trim(),
+        password: password
+        // verificationCode: 'asdf'
+        // sysName: 'tyteen1',
+        // loginType: 'tyteen',
+        // clientPassword: 'nfjkMaHiO4Wz42Fb1jNVWlilUzBXxwqD'
+
       }
       userLogin(data).then(response => {
         console.log(response)

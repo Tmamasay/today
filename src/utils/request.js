@@ -53,9 +53,9 @@ service.interceptors.response.use(
    */
   response => {
     store.dispatch('user/refreshToken', response.headers.authorization)
-    // console.log(response.headers.authorization)
+
+    console.log(response.headers)
     const res = response.data
-    // console.log('88888888888888888888')
     // console.log(res)
     // 如果自定义代码不是00000，则判断为错误。
     if (res.statusCode && res.statusCode !== '00000') {

@@ -52,10 +52,11 @@ export const componentsMap = {
   category: () => import('@/views/userManager/userList'), // 会员管理-会员列表
   user: () => import('@/views/Notice/index'), // 资讯
   payRecord: () => import('@/views/userManager/manager'), // 角色管理
-  globalGoodsWarehouse: () => import('@/views/userManager/deployment'), // 私有化部署
+  // globalGoodsWarehouse: () => import('@/views/userManager/deployment'), // 私有化部署
   // main: () => import('@/views/userManager/order'), // 订单列表
   // webStatistics: () => import('@/views/dashboard/busIndex') // 首页
-  main: () => import('@/views/Channel/index') // 首页
+  main: () => import('@/views/Channel/index'), // 首页
+  globalGoodsWarehouse: () => import('@/views/Platform/index')
 
   // homePage: () => import('@/views/dashboard/busIndex'), // 控制台-首页
   // managerHomePage: () => import('@/views/dashboard/index'), // 控制台-首页
