@@ -16,3 +16,35 @@ export function getMyMenus(data) {
     data
   })
 }
+// 新增渠道商
+export function addStore(data) {
+  return request({
+    url: '/tpp-admin/storeManager/addStore',
+    method: 'post',
+    data
+  })
+}
+// 获取行业类别下拉
+export function getTradeList(data) {
+  return request({
+    url: '/tpp-admin/tradeManager/getTradeList',
+    method: 'post',
+    data
+  })
+}
+// 新增渠道商判断某些信息是否重复
+export function checkAddStore(data) {
+  return request({
+    url: '/tpp-admin/storeManager/checkAddStore',
+    method: 'post',
+    data
+  })
+}
+// 渠道商列表
+export function selectStoreList(data) {
+  return request({
+    url: '/tpp-admin/storeManager/selectStore',
+    method: 'post',
+    data
+  })
+}

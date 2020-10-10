@@ -289,6 +289,7 @@ parseInt((parseFloat(time / 3600.0) - parseInt(time / 3600.0)) * 60)) * 60) + 'ç
   padding: 20px;
 
 }
+
 .Ptitle{
       font-size: 18px;
     line-height: 18px;

@@ -28,22 +28,32 @@
           {{ formatDate(scope.row.createTime) }}
         </template>
       </el-table-column> -->
-      <el-table-column prop="name" label="测试渠道商" />
-      <el-table-column prop="account" label="账号" />
-      <el-table-column prop="industry" label="行业" />
-      <el-table-column prop="grade" label="等级" />
-      <el-table-column prop="entityName" label="实体店名字" />
-      <el-table-column prop="entityAdress" label="实体店地址" />
-      <el-table-column prop="contacts" label="联系人" />
-      <el-table-column prop="phone" label="联系电话" />
+      <el-table-column prop="storeName" label="渠道商名称" />
+      <el-table-column prop="tradeType" label="行业" />
+      <el-table-column prop="storeLevel" label="等级" />
+      <el-table-column prop="status" label="状态">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status==='USE'" class="useSign">使用中</span>
+          <span v-else-if="scope.row.status==='STOP' " class="noUseSign" type="danger">已禁用</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="rate" label="手续费率">
+        <template slot-scope="scope">
+          {{ (scope.row.rate/100).toFixed(2) }}%
+        </template>
+      </el-table-column>
+      <el-table-column prop="storeRealName" label="实体店名字" />
+      <el-table-column prop="storeAddress" label="实体店地址" />
+      <el-table-column prop="userName" label="联系人" />
+      <el-table-column prop="mobile" label="联系电话" />
+      <el-table-column prop="createTime" width="150" label="创建时间" />
       <el-table-column
         label="编辑"
       >
         <template slot-scope="scope">
           <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">编辑</span>
-          <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">冻结</span>
-          <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">充值</span>
-          <span style="color:red;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">删除</span>
+          <!-- <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">充值</span> -->
+          <span style="color:red;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">冻结</span>
         </template>
       </el-table-column>
     </el-table>
@@ -74,9 +84,7 @@
         </el-form-item>
         <el-form-item label="行业类别" prop="industry">
           <el-select v-model="yhData.industry" placeholder="请选择" style="width:90%">
-            <el-option label="超市" value="1" />
-            <el-option label="奶茶" value="2" />
-            <el-option label="母婴" value="3" />
+            <el-option v-for="item in options" :key="item.id" :label="item.tradeName" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="渠道商等级" prop="grade" style="margin-left:-15px">
@@ -116,10 +124,51 @@
 </template>
 
 <script>
-import { selectUserManagerList, updateUserManager, deleteUserManager, selectRoleList, addUserManager } from '@/api/chengxu'
+import { addStore, getTradeList, checkAddStore, selectStoreList } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
 export default {
   data() {
+    const validatePhone = (rule, value, callback) => {
+      const reg = /^1([38][0-9]|4[579]|5[0-3,5-9]|6[6]|7[0135678]|9[89])\d{8}$/
+      const ss = reg.test(value)
+      if (!value) {
+        callback(new Error('请输入手机号码'))
+      } else if (!ss) {
+        callback(new Error('手机号码格式错误'))
+      } else {
+        callback()
+      }
+    }
+    const validateLoginName = async(rule, value, callback) => {
+      const { data } = await checkAddStore({ loginName: value })
+      if (!value) {
+        callback(new Error('请输入渠道商账号'))
+      } else if (!data) {
+        callback(new Error('渠道商账号已存在'))
+      } else {
+        callback()
+      }
+    }
+    const validateStoreName = async(rule, value, callback) => {
+      const { data } = await checkAddStore({ storeName: value })
+      if (!value) {
+        callback(new Error('请输入渠道商名称'))
+      } else if (!data) {
+        callback(new Error('渠道商名称已存在'))
+      } else {
+        callback()
+      }
+    }
+    const validateStoreRealName = async(rule, value, callback) => {
+      const { data } = await checkAddStore({ storeRealName: value })
+      if (!value) {
+        callback(new Error('请输入实体店铺名称'))
+      } else if (!data) {
+        callback(new Error('实体店铺名称已存在'))
+      } else {
+        callback()
+      }
+    }
     return {
       userName: '',
       options: [],
@@ -140,10 +189,10 @@ export default {
       },
       rulesyh: {
         name: [
-          { required: true, message: '请输入渠道商名称', trigger: 'blur' }
+          { required: true, trigger: 'blur', validator: validateStoreName }
         ],
         account: [
-          { required: true, message: '请输入渠道商账号', trigger: 'blur' }
+          { required: true, trigger: 'blur', validator: validateLoginName }
         ],
         industry: [
           { required: true, message: '请选择所属行业', trigger: 'change' }
@@ -152,7 +201,7 @@ export default {
           { required: true, message: '请选择渠道商等级', trigger: 'change' }
         ],
         entityName: [
-          { required: true, message: '请输入实体店名字', trigger: 'blur' }
+          { required: true, trigger: 'blur', validator: validateStoreRealName }
         ],
         entityAdress: [
           { required: true, message: '请输入实体店地址', trigger: 'blur' }
@@ -161,7 +210,7 @@ export default {
           { required: true, message: '请输入联系人', trigger: 'blur' }
         ],
         phone: [
-          { required: true, message: '请输入联系电话', trigger: 'blur' }
+          { required: true, trigger: 'blur', validator: validatePhone }
         ],
         fee: [
           { required: true, message: '请输入手续费率', trigger: 'blur' }
@@ -193,21 +242,55 @@ export default {
     }
   },
   mounted() {
-    // this.getlist()
+    this.getlist()
   },
   methods: {
+    checkAddStore(sign, vlaue) {
+      let param = null
+      switch (sign) {
+        case 1: // 渠道商账号
+          param = {
+            loginName: vlaue
+          }
+          // deleteUserManager({
+          //   param: {
+          //     id: row.id,
+          //     sysName: 'tyteen'
+          //   }
+          // }).then(res => {
+          //   if (res.statusCode === '00000') {
+          //     this.$message({ message: '操作成功', type: 'success' })
+          //     this.getlist()
+          //   }
+          // })
+          break
+        case 2: // 渠道商名称
+          param = {
+            storeName: vlaue
+          }
+          break
+        case 3: // 店铺名称(真实的)
+          param = {
+            storeRealName: vlaue
+          }
+          break
+
+        default:
+          break
+      }
+    },
     removeZX(row) {
-      deleteUserManager({
-        param: {
-          id: row.id,
-          sysName: 'tyteen'
-        }
-      }).then(res => {
-        if (res.statusCode === '00000') {
-          this.$message({ message: '操作成功', type: 'success' })
-          this.getlist()
-        }
-      })
+      // deleteUserManager({
+      //   param: {
+      //     id: row.id,
+      //     sysName: 'tyteen'
+      //   }
+      // }).then(res => {
+      //   if (res.statusCode === '00000') {
+      //     this.$message({ message: '操作成功', type: 'success' })
+      //     this.getlist()
+      //   }
+      // })
     },
     async addUser(formName) {
       const _this = this
@@ -215,25 +298,35 @@ export default {
         if (valid) {
           if (!this.yhData.id) {
             // this.yhData.password = ttyMD5(this.yhData.password)
-            addUserManager({
-              param: this.yhData
-            }).then(res => {
-              if (res.statusCode === '00000') {
+            const _param = {
+              loginName: this.yhData.account,
+              mobile: this.yhData.phone,
+              password: this.yhData.password,
+              rate: this.yhData.fee,
+              storeAddress: this.yhData.entityAdress,
+              storeLevel: this.yhData.grade,
+              storeName: this.yhData.name,
+              storeRealName: this.yhData.entityName,
+              tradeTypeId: this.yhData.industry,
+              userName: this.yhData.contacts
+            }
+            addStore(_param).then(res => {
+              if (res.status) {
                 _this.$message({ message: '操作成功', type: 'success' })
                 _this.dialogVisible_yh = false
                 _this.getlist()
               }
             })
           } else {
-            updateUserManager({
-              param: this.yhData
-            }).then(res => {
-              if (res.statusCode === '00000') {
-                _this.$message({ message: '操作成功', type: 'success' })
-                _this.dialogVisible_yh = false
-                _this.getlist()
-              }
-            })
+            // updateUserManager({
+            //   param: this.yhData
+            // }).then(res => {
+            //   if (res.statusCode === '00000') {
+            //     _this.$message({ message: '操作成功', type: 'success' })
+            //     _this.dialogVisible_yh = false
+            //     _this.getlist()
+            //   }
+            // })
           }
         }
       })
@@ -250,23 +343,27 @@ export default {
     addZx() {
       this.dialogVisible_yh = true
       this.yhData = {
-        password: '',
-        roleId: '',
-        username: ''
+        name: '', // 渠道商名称
+        account: '', // 账号
+        industry: '', // 行业
+        grade: '', // 等级
+        entityName: '', // 实体店名字
+        entityAdress: '', // 实体店地址
+        contacts: '', // 联系人
+        phone: '', // 联系电话
+        fee: '', // 手续费率
+        password: '' // 登陆密码
       }
-      this.selectRoleList()
+      this.getTradeList()
     },
     goDetail(e, v) {
       this.$router.push({ path: '/detial', query: { companyStatus: e, customerId: v }})
     },
-    async selectRoleList() {
-      await selectRoleList({
-        param: {
-          sysName: 'tyteen'
-        }
-      }).then(res => {
-        if (res.statusCode === '00000') {
+    async getTradeList() {
+      await getTradeList().then(res => {
+        if (res.status) {
           this.options = res.data
+          console.log(this.options)
         }
       })
     },
@@ -275,15 +372,15 @@ export default {
       _this.loading = true
       var data = {
         param: {
-          userName: _this.userName,
-          pageNum: _this.Current,
-          pageSize: _this.Size
+          // userName: _this.userName,
+          current: _this.Current,
+          size: _this.Size
 
         }
       }
-      selectUserManagerList(data).then(res => {
+      selectStoreList(data).then(res => {
         console.log(res)
-        if (res.statusCode === '00000') {
+        if (res.status) {
           setTimeout(res => {
             _this.loading = false
           }, 300)
@@ -331,6 +428,19 @@ export default {
 </script>
 
 <style scoped>
+.useSign{
+
+  padding: 5px 8px;
+  background-color:#00c48f !important;
+ color:#fff ;
+ border-radius: 4px;
+}
+.noUseSign{
+   padding: 5px 8px;
+  background-color:rgb(167, 167, 167);
+ color:#fff ;
+ border-radius: 4px;
+}
 .toolS{
   display: flex;
   justify-content: space-between;
