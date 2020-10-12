@@ -72,10 +72,43 @@ export function updateStoreOne(data) {
     data
   })
 }
+
 // 管理端查询指定行业商品分类
 export function getGoodsTypeByAdmin(data) {
   return request({
     url: '/tpp-admin/goodsTypeManager/getGoodsTypeByAdmin',
+    method: 'post',
+    data
+  })
+}
+// 新增行业类别
+export function addTrade(data) {
+  return request({
+    url: '/tpp-admin/tradeManager/addTrade',
+    method: 'post',
+    data
+  })
+}
+// 修改行业类别
+export function updateTrade(data) {
+  return request({
+    url: '/tpp-admin/tradeManager/updateTrade',
+    method: 'post',
+    data
+  })
+}
+// 验证行业类别同名(true:可用,false:不可用)
+export function checkTrade(data) {
+  return request({
+    url: '/tpp-admin/tradeManager/checkTrade',
+    method: 'post',
+    data
+  })
+}
+// 删除行业类别
+export function delTrade(data) {
+  return request({
+    url: '/tpp-admin/tradeManager/delTrade',
     method: 'post',
     data
   })

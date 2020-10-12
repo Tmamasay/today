@@ -46,8 +46,8 @@ export const constantRoutes = [
     hidden: true,
     children: [
       {
-        path: 'detial',
-        component: () => import('@/views/userManager/detail')
+        path: 'commoditList',
+        component: () => import('@/views/Commodity/classFyList')
       },
       {
         path: 'detailOrder',

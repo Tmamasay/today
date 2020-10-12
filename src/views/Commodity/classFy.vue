@@ -40,6 +40,7 @@
         <template slot-scope="scope">
           <el-button size="small" @click="goEdit(scope.row)">编 辑</el-button>
           <el-button size="small" @click="goClassFy(scope.row)">分类管理</el-button>
+          <el-button size="small" type="danger" @click="removeZX(scope.row)">删除</el-button>
 
         </template>
       </el-table-column>
@@ -56,46 +57,123 @@
       />
     </div>
     <el-dialog
-      title="资讯操作"
+      title="行业操作"
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
-      width="50%"
+      width="30%"
     >
       <!-- <EditorImage v-if="dialogVisible" :value="content" @editlisten="geteditS" /> -->
-      <el-form v-if="dialogVisible" ref="addZxData" :label-position="labelPosition" label-width="140px" :model="addZxData" :rules="rulesZx">
-        <el-form-item label="摘要" prop="remark">
-          <el-input v-model="addZxData.remark" placeholder="请输入摘要" />
-        </el-form-item>
-        <el-form-item label="来源" prop="source">
-          <el-input v-model="addZxData.source" placeholder="请输入来源" />
-        </el-form-item>
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="addZxData.title" placeholder="请输入标题" />
+      <el-form v-if="dialogVisible" ref="addClassfy" :label-position="labelPosition" label-width="140px" :model="addClassfy" :rules="rulesClass">
+        <el-form-item label="行业" prop="className">
+          <el-input v-model="addClassfy.className" placeholder="请输入行业" />
         </el-form-item>
 
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="zx_submit('addZxData')">确 定</el-button>
+        <el-button type="primary" @click="zx_submit('addClassfy')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getGoodsTypeByAdmin, getTradeList } from '@/api/user'
+import { getTradeList, checkTrade, addTrade, updateTrade, delTrade } from '@/api/user'
 export default {
+
   data() {
+    const validateClassfyName = async(rule, value, callback) => {
+      if (!this.addClassfy.id) {
+        const { data } = await checkTrade({ tradeName: value })
+        if (!value) {
+          callback(new Error('请输入行业类别名'))
+        } else if (!data) {
+          callback(new Error('行业类别名名称已存在'))
+        } else {
+          callback()
+        }
+      } else {
+        if (!value) {
+          callback(new Error('请输入行业类别名'))
+        } else {
+          callback()
+        }
+      }
+    }
     return {
+      addClassfy: {
+        className: ''
+
+      },
       dialogVisible: false,
-      loading: false // loading加载
+      loading: false, // loading加载
+      rulesClass: {
+        className: [
+          { required: true, trigger: 'blur', validator: validateClassfyName }
+        ] }
     }
   },
   mounted() {
     this.getlist()
   },
   methods: {
-    goDetail(e, v) {
-      this.$router.push({ path: '/detial', query: { companyStatus: e, customerId: v }})
+    removeZX(row) {
+      delTrade({
+        id: row.id
+        // tradeName: row.tradeName
+      }).then(res => {
+        if (res.status) {
+          this.$message({ message: '操作成功', type: 'success' })
+          this.getlist()
+        }
+      })
+    },
+    goEdit(row) {
+      this.dialogVisible = true
+      this.addClassfy = {
+        id: row.id,
+        className: row.tradeName
+      }
+    },
+    async zx_submit(formName) {
+      const _this = this
+      await _this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (!this.addClassfy.id) {
+            // this.yhData.password = ttyMD5(this.yhData.password)
+            const _param = {
+              tradeName: this.addClassfy.className
+            }
+            addTrade(_param).then(res => {
+              if (res.status) {
+                _this.$message({ message: '操作成功', type: 'success' })
+                _this.dialogVisible = false
+                _this.getlist()
+              }
+            })
+          } else {
+            const _param2 = {
+              id: this.addClassfy.id,
+              tradeName: this.addClassfy.className
+            }
+            updateTrade(_param2).then(res => {
+              if (res.status) {
+                _this.$message({ message: '操作成功', type: 'success' })
+                _this.dialogVisible = false
+                _this.getlist()
+              }
+            })
+          }
+        }
+      })
+    },
+    addClassFy() {
+      this.dialogVisible = true
+      this.addClassfy = {
+        className: ''
+      }
+    },
+    goClassFy(row) {
+      this.$router.push({ path: '/commoditList', query: { tradeId: row.id }})
     },
     getlist() {
       const _this = this
