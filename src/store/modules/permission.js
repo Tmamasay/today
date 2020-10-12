@@ -49,7 +49,7 @@ export function filterAsyncRoutes(routes, roles) {
 // 定义子路由跳转页面
 export const componentsMap = {
   // globalGoodsWarehouse: () => import('@/views/power/index'), // 角色管理
-  category: () => import('@/views/userManager/userList'), // 会员管理-会员列表
+  category: () => import('@/views/Commodity/classFy'), // 会员管理-会员列表
   user: () => import('@/views/Notice/index'), // 资讯
   payRecord: () => import('@/views/userManager/manager'), // 角色管理
   // globalGoodsWarehouse: () => import('@/views/userManager/deployment'), // 私有化部署

@@ -53,7 +53,8 @@
         <template slot-scope="scope">
           <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">编辑</span>
           <!-- <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">充值</span> -->
-          <span style="color:red;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">冻结</span>
+          <span v-if="scope.row.status==='USE'" style="color:red;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">冻结</span>
+          <span v-if="scope.row.status==='STOP'" style="color:#00c48f;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">解冻</span>
         </template>
       </el-table-column>
     </el-table>
@@ -80,7 +81,7 @@
           <el-input v-model="yhData.name" placeholder="请输入渠道商名称" />
         </el-form-item>
         <el-form-item label="渠道商账号" prop="account">
-          <el-input v-model="yhData.account" placeholder="请输入姓名" />
+          <el-input v-model="yhData.account" placeholder="请输入渠道商账号" />
         </el-form-item>
         <el-form-item label="行业类别" prop="industry">
           <el-select v-model="yhData.industry" placeholder="请选择" style="width:90%">
@@ -111,7 +112,7 @@
         <el-form-item label="手续费率" prop="fee">
           <el-input v-model="yhData.fee" placeholder="请输入手续费率（最低千分之六）" />
         </el-form-item>
-        <el-form-item label="登录密码" prop="password">
+        <el-form-item v-if="!yhData.id" label="登录密码" prop="password">
           <el-input v-model="yhData.password" type="password" placeholder="请输入登录密码" />
         </el-form-item>
       </el-form>
@@ -124,7 +125,7 @@
 </template>
 
 <script>
-import { addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne } from '@/api/user'
+import { addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne, getStoreOne, updateStoreOne } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
 export default {
   data() {
@@ -140,33 +141,57 @@ export default {
       }
     }
     const validateLoginName = async(rule, value, callback) => {
-      const { data } = await checkAddStore({ loginName: value })
-      if (!value) {
-        callback(new Error('请输入渠道商账号'))
-      } else if (!data) {
-        callback(new Error('渠道商账号已存在'))
+      if (!this.yhData.id) {
+        const { data } = await checkAddStore({ loginName: value })
+        if (!value) {
+          callback(new Error('请输入渠道商账号'))
+        } else if (!data) {
+          callback(new Error('渠道商账号已存在'))
+        } else {
+          callback()
+        }
       } else {
-        callback()
+        if (!value) {
+          callback(new Error('请输入渠道商账号'))
+        } else {
+          callback()
+        }
       }
     }
     const validateStoreName = async(rule, value, callback) => {
-      const { data } = await checkAddStore({ storeName: value })
-      if (!value) {
-        callback(new Error('请输入渠道商名称'))
-      } else if (!data) {
-        callback(new Error('渠道商名称已存在'))
+      if (!this.yhData.id) {
+        const { data } = await checkAddStore({ storeName: value })
+        if (!value) {
+          callback(new Error('请输入渠道商名称'))
+        } else if (!data) {
+          callback(new Error('渠道商名称已存在'))
+        } else {
+          callback()
+        }
       } else {
-        callback()
+        if (!value) {
+          callback(new Error('请输入渠道商名称'))
+        } else {
+          callback()
+        }
       }
     }
     const validateStoreRealName = async(rule, value, callback) => {
-      const { data } = await checkAddStore({ storeRealName: value })
-      if (!value) {
-        callback(new Error('请输入实体店铺名称'))
-      } else if (!data) {
-        callback(new Error('实体店铺名称已存在'))
+      if (!this.yhData.id) {
+        const { data } = await checkAddStore({ storeRealName: value })
+        if (!value) {
+          callback(new Error('请输入实体店铺名称'))
+        } else if (!data) {
+          callback(new Error('实体店铺名称已存在'))
+        } else {
+          callback()
+        }
       } else {
-        callback()
+        if (!value) {
+          callback(new Error('请输入实体店铺名称'))
+        } else {
+          callback()
+        }
       }
     }
     return {
@@ -248,7 +273,7 @@ export default {
     removeZX(row) {
       disableStoreOne({
         storeId: row.id,
-        status: row.isDelete ? 0 : 1
+        status: row.status === 'USE' ? 1 : 0
 
       }).then(res => {
         if (res.status) {
@@ -283,27 +308,60 @@ export default {
               }
             })
           } else {
-            // updateUserManager({
-            //   param: this.yhData
-            // }).then(res => {
-            //   if (res.statusCode === '00000') {
-            //     _this.$message({ message: '操作成功', type: 'success' })
-            //     _this.dialogVisible_yh = false
-            //     _this.getlist()
-            //   }
-            // })
+            const _param2 = {
+              storeId: this.yhData.id,
+              loginName: this.yhData.account,
+              mobile: this.yhData.phone,
+              password: this.yhData.password,
+              rate: this.yhData.fee,
+              storeAddress: this.yhData.entityAdress,
+              storeLevel: this.yhData.grade,
+              storeName: this.yhData.name,
+              storeRealName: this.yhData.entityName,
+              tradeTypeId: this.yhData.industry,
+              userName: this.yhData.contacts
+            }
+            updateStoreOne(_param2).then(res => {
+              if (res.status) {
+                _this.$message({ message: '操作成功', type: 'success' })
+                _this.dialogVisible_yh = false
+                _this.getlist()
+              }
+            })
           }
         }
       })
     },
     goEdit(row) {
-      this.selectRoleList()
-      this.dialogVisible_yh = true
-      this.yhData = {
-        id: row.id,
-        roleId: row.roleId,
-        username: row.username
-      }
+      this.getTradeList()
+      getStoreOne({
+        storeId: row.id
+      }).then(res => {
+        if (res.status) {
+          this.dialogVisible_yh = true
+          console.log(res.data.store)
+          console.log('-----------')
+          this.yhData = {
+            id: row.id,
+            account: res.data.user.userName,
+            phone: res.data.store.mobile,
+            password: res.data.user.password,
+            fee: res.data.store.rate,
+            entityAdress: res.data.store.storeAddress,
+            grade: res.data.store.storeLevel,
+            name: res.data.store.storeName,
+            entityName: res.data.store.storeRealName,
+            industry: res.data.store.tradeTypeId,
+            contacts: res.data.store.userName
+          }
+        }
+      })
+
+      // this.yhData = {
+      //   id: row.id,
+      //   roleId: row.roleId,
+      //   username: row.username
+      // }
     },
     addZx() {
       this.dialogVisible_yh = true

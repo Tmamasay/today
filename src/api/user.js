@@ -56,3 +56,27 @@ export function disableStoreOne(data) {
     data
   })
 }
+// 单查渠道商
+export function getStoreOne(data) {
+  return request({
+    url: '/tpp-admin/storeManager/getStoreOne',
+    method: 'post',
+    data
+  })
+}
+// 修改渠道商
+export function updateStoreOne(data) {
+  return request({
+    url: '/tpp-admin/storeManager/updateStoreOne',
+    method: 'post',
+    data
+  })
+}
+// 管理端查询指定行业商品分类
+export function getGoodsTypeByAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsTypeManager/getGoodsTypeByAdmin',
+    method: 'post',
+    data
+  })
+}
