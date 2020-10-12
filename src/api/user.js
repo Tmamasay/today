@@ -48,3 +48,11 @@ export function selectStoreList(data) {
     data
   })
 }
+// 禁用或解禁渠道商
+export function disableStoreOne(data) {
+  return request({
+    url: '/tpp-admin/storeManager/disableStoreOne',
+    method: 'post',
+    data
+  })
+}

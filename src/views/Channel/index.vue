@@ -124,7 +124,7 @@
 </template>
 
 <script>
-import { addStore, getTradeList, checkAddStore, selectStoreList } from '@/api/user'
+import { addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
 export default {
   data() {
@@ -245,52 +245,17 @@ export default {
     this.getlist()
   },
   methods: {
-    checkAddStore(sign, vlaue) {
-      let param = null
-      switch (sign) {
-        case 1: // 渠道商账号
-          param = {
-            loginName: vlaue
-          }
-          // deleteUserManager({
-          //   param: {
-          //     id: row.id,
-          //     sysName: 'tyteen'
-          //   }
-          // }).then(res => {
-          //   if (res.statusCode === '00000') {
-          //     this.$message({ message: '操作成功', type: 'success' })
-          //     this.getlist()
-          //   }
-          // })
-          break
-        case 2: // 渠道商名称
-          param = {
-            storeName: vlaue
-          }
-          break
-        case 3: // 店铺名称(真实的)
-          param = {
-            storeRealName: vlaue
-          }
-          break
-
-        default:
-          break
-      }
-    },
     removeZX(row) {
-      // deleteUserManager({
-      //   param: {
-      //     id: row.id,
-      //     sysName: 'tyteen'
-      //   }
-      // }).then(res => {
-      //   if (res.statusCode === '00000') {
-      //     this.$message({ message: '操作成功', type: 'success' })
-      //     this.getlist()
-      //   }
-      // })
+      disableStoreOne({
+        storeId: row.id,
+        status: row.isDelete ? 0 : 1
+
+      }).then(res => {
+        if (res.status) {
+          this.$message({ message: '操作成功', type: 'success' })
+          this.getlist()
+        }
+      })
     },
     async addUser(formName) {
       const _this = this
