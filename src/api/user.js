@@ -81,6 +81,22 @@ export function getGoodsTypeByAdmin(data) {
     data
   })
 }
+// 新增管理端指定行业商品分类
+export function addGoodsTypeByAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsTypeManager/addGoodsTypeByAdmin',
+    method: 'post',
+    data
+  })
+}
+// 修改管理端指定行业商品分类
+export function updateGoodsTypeByAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsTypeManager/updateGoodsTypeByAdmin',
+    method: 'post',
+    data
+  })
+}
 // 新增行业类别
 export function addTrade(data) {
   return request({

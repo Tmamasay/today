@@ -1,112 +1,95 @@
 <template>
   <div class="hw_admin_box shaowAll">
-    <div class="toolS">
-      <el-button type="primary" style="margin-bottom:20px" @click="addZx">新增资讯</el-button>
-    </div>
-    <div />
+    <el-row>
+      <el-col :span="16">
+        <el-table
+          v-loading="loading"
+          :data="datalist"
+          tooltip-effect="dark"
+          style="width:95%;margin:10px auto 20px auto;"
+          highlight-current-row
+        >
+          <el-table-column prop="tradeName" label="行业" />
+          <el-table-column prop="createTime" label="创建时间" />
+          <el-table-column
+            label="编辑"
+          >
+            <template slot-scope="scope">
+              <el-button size="small" @click="goEdit(scope.row)">编 辑</el-button>
+              <el-button size="small" @click="goClassFy(scope.row)">分类管理</el-button>
+              <el-button size="small" type="danger" @click="removeZX(scope.row)">删除</el-button>
 
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-col>
+      <el-col :span="8">
+        <div class="toolS">
+          <el-button type="primary" style="margin-bottom:20px" @click="addFy()">新增一级分类</el-button>
+        </div>
+        <div v-if="classFyList.length">
+          <el-tree
+            :data="classFyList"
+            node-key="id"
+            default-expand-all
+            :expand-on-click-node="false"
+          >
+            <span slot-scope="{ node, data }" class="custom-tree-node">
+              <span class="caoNa">{{ node.label }}</span>
+              <span>
+                <span class="caoz" @click="() => addFy(data)">新增下级</span>
+                <span class="caoz" @click="() => edit(data)">编辑</span>
+                <!-- <el-button
+              type="text"
+              size="mini"
+              @click="() => remove(node, data)"
+            >
+              删除
+            </el-button> -->
+              </span>
+            </span>
+          </el-tree>
+        </div>
+      </el-col>
+    </el-row>
     <el-dialog
-      title="资讯操作"
-      :visible.sync="dialogVisible"
+      title="新增分类"
+      :visible.sync="dialogVisibleFy"
       :close-on-click-modal="false"
-      width="50%"
+      width="30%"
     >
       <!-- <EditorImage v-if="dialogVisible" :value="content" @editlisten="geteditS" /> -->
-      <el-form v-if="dialogVisible" ref="addZxData" :label-position="labelPosition" label-width="140px" :model="addZxData" :rules="rulesZx">
-
-        <el-form-item label="上传缩略图：" prop="noticeImg">
-          <div>
-            <el-upload
-              list-type="picture-card"
-              action
-              :file-list="fileList"
-              :show-file-list="true"
-              :http-request="uploadFile"
-              :limit="1"
-              :on-change="handlePreview"
-              :on-success="handleSuccess"
-            >
-              <i class="el-icon-plus" />
-              <div slot="tip" class="el-upload__tip">
-                提示：支持格式JPG，JPEG,PNG,PDF
-              </div>
-            </el-upload>
-          </div>
-        </el-form-item>
-        <el-form-item label="摘要" prop="remark">
-          <el-input v-model="addZxData.remark" placeholder="请输入摘要" />
-        </el-form-item>
-        <el-form-item label="来源" prop="source">
-          <el-input v-model="addZxData.source" placeholder="请输入来源" />
-        </el-form-item>
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="addZxData.title" placeholder="请输入标题" />
-        </el-form-item>
-        <el-form-item label="发布时间" prop="releaseTime">
-          <el-date-picker
-            v-model="addZxData.releaseTime"
-            type="datetime"
-            placeholder="选择日期时间"
-            align="right"
-          />
-
-        </el-form-item>
-        <el-form-item label="正文：" prop="textBody">
-          <EditorImage v-if="dialogVisible" :value="addZxData.textBody" @editlisten="geteditS" />
+      <el-form v-if="dialogVisibleFy" ref="fyList" label-width="70px" :model="fyList" :rules="rulesClass">
+        <el-form-item label="分类名" prop="name">
+          <el-input v-model="fyList.name" placeholder="请输入分类名" />
         </el-form-item>
 
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="zx_submit('addZxData')">确 定</el-button>
+        <el-button type="primary" @click="zx_submit('fyList')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { selectPageNotice, delNotice, updateNotice, addNotice, fileUpload } from '@/api/chengxu'
-import EditorImage from '@/components/Tinymce/index' // 富文本编辑
+import { getGoodsTypeByAdmin, addGoodsTypeByAdmin, updateGoodsTypeByAdmin } from '@/api/user'
 export default {
-  components: { EditorImage },
   data() {
     return {
-      fileList: [],
-      uploadData: null,
-      dialogVisible: false,
-      time: null,
-      loading: false, // loading加载
-      dataList: [], // 数据列表
-      hwSize: 10, // 一页多少条
-      hwCurrent: 1, // 页码
-      total: 0, // 总数
-      title: '', // 新增修改名称
-      labelPosition: 'center', // 对齐方式
-      addZxData: {
-        noticeImg: '',
-        releaseTime: '',
-        remark: '',
-        source: '',
-        textBody: '',
-        title: ''
+      dialogVisibleFy: false,
+      addObj: {
+        rootId: ''
       },
-      rulesZx: {
-        noticeImg: [
-          { required: true, message: '请上传缩略图', trigger: 'blur' }
-        ],
-        remark: [
-          { required: true, message: '请输入摘要', trigger: 'blur' }
-        ],
-        source: [
-          { required: true, message: '请输入来源', trigger: 'blur' }
-        ],
-        title: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
-        ],
-        releaseTime: [
-          { required: true, message: '请选择发布时间', trigger: 'change' }
-        ],
-        textBody: [
-          { required: true, message: '请输入正文', trigger: 'blur' }
+      classFyList: [],
+      fyList: {
+        name: '',
+        rootId: '',
+        tradeId: ''
+      }, // 分类
+      rulesClass: {
+        name: [
+          { required: true, message: '请输入分类名', trigger: 'blur' }
         ]
       }
 
@@ -120,151 +103,141 @@ export default {
     this.getlist()
   },
   methods: {
-    goEdit(row) {
-      this.dialogVisible = true
-      this.addZxData = {
-        id: row.id,
-        noticeImg: row.noticeImg,
-        releaseTime: row.releaseTime,
-        remark: row.remark,
-        source: row.source,
-        textBody: row.textBody,
-        title: row.title
-      }
-      this.fileList.push({
-        url: row.noticeImg
-      })
-    },
-    // 时间戳转换
-    formatDate(row) {
-      const date = new Date(row.releaseTime)
-      const y = date.getFullYear()
-      let MM = date.getMonth() + 1
-      MM = MM < 10 ? ('0' + MM) : MM
-      let d = date.getDate()
-      d = d < 10 ? ('0' + d) : d
-      let h = date.getHours()
-      h = h < 10 ? ('0' + h) : h
-      let m = date.getMinutes()
-      m = m < 10 ? ('0' + m) : m
-      let s = date.getSeconds()
-      s = s < 10 ? ('0' + s) : s
-      return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
-    },
-    addZx() {
-      this.fileList = []
-      this.dialogVisible = true
-      this.addZxData = {
-        noticeImg: '',
-        releaseTime: '',
-        remark: '',
-        source: '',
-        textBody: '',
-        title: ''
-      }
-    },
-    handleSuccess(response) {
-      console.log(response)
-      console.log('888888888888')
-    },
-    uploadFile(e) {
-      fileUpload(this.uploadData).then(res => {
-        if (res) {
-          console.log(res)
-          this.addZxData.noticeImg = res.data
-          this.$message({
-            message: '上传成功',
-            type: 'success'
-          })
-        } else {
-          this.$message.error(res.status)
+    async zx_submit(formName) {
+      const _this = this
+      await _this.$refs[formName].validate((valid) => {
+        if (valid) {
+          if (!this.fyList.id) {
+            // this.yhData.password = ttyMD5(this.yhData.password)
+            const _param = {
+              name: this.fyList.name,
+              rootId: this.addObj.rootId,
+              tradeId: this.$route.query.tradeId
+            }
+            addGoodsTypeByAdmin(_param).then(res => {
+              if (res.status) {
+                _this.$message({ message: '操作成功', type: 'success' })
+                _this.dialogVisibleFy = false
+                _this.getlist()
+              }
+            })
+          } else {
+            const _param2 = {
+              id: this.fyList.id,
+              name: this.fyList.name
+            }
+            updateGoodsTypeByAdmin(_param2).then(res => {
+              if (res.status) {
+                _this.$message({ message: '操作成功', type: 'success' })
+                _this.dialogVisibleFy = false
+                _this.getlist()
+              }
+            })
+          }
         }
       })
     },
-    // 获取上传文件信息
-    handlePreview(file) {
-      const _this = this
-      var formData = new FormData()
-      formData.append('file', file.raw)
-      _this.uploadData = formData
+    addFy(data) {
+      console.log(data)
+      if (data) {
+        this.addObj.rootId = data.id
+      }
+      this.dialogVisibleFy = true
     },
-    geteditS(data) {
-      this.addZxData.textBody = data
+    generateRoutes(routes) {
+      const res = []
+      routes.forEach(route => {
+        const data = {
+          id: route.id,
+          label: route.name
+        }
+        if (route.children && route.children.length) {
+          data.children = this.generateRoutes(route.children)
+        }
+        res.push(data)
+      })
+      return res
     },
-
+    remove(node, data) {
+      const parent = node.parent
+      const children = parent.data.children || parent.data
+      const index = children.findIndex(d => d.id === data.id)
+      children.splice(index, 1)
+    },
+    edit(data) {
+      console.log(data)
+      this.dialogVisibleFy = true
+      this.fyList.id = data.id
+      this.fyList.name = data.label
+    },
     // 列表
     async getlist() {
       const _this = this
       _this.loading = true
       var data = {
-        param: {
-          startTime: _this.time ? new Date(_this.time[0]).getTime() : '',
-          endTime: _this.time ? new Date(_this.time[1]).getTime() + 86399999 : '',
-          pageNum: _this.hwCurrent,
-          pageSize: _this.hwSize
-        }
+        tradeId: this.$route.query.tradeId
       }
-      await selectPageNotice(data).then(res => {
+      await getGoodsTypeByAdmin(data).then(res => {
         console.log(res)
-        if (res.statusCode === '00000') {
+        if (res.status) {
           setTimeout(res => {
             _this.loading = false
           }, 300)
-          _this.dataList = res.data.records
-          _this.total = +res.data.total
+          _this.classFyList = this.generateRoutes(res.data.children)
+          console.log(_this.classFyList)
         }
       })
     },
     // 新增
-    async zx_submit(formName) {
-      const _this = this
-      await _this.$refs[formName].validate((valid) => {
-        if (valid) {
-          this.addZxData.releaseTime = this.formatDate(new Date(this.addZxData.releaseTime).getTime())
-          const data = {
-            param: this.addZxData
-          }
-          if (this.addZxData.id) {
-            updateNotice(data).then(res => {
-              console.log(res)
-              if (res.statusCode === '00000') {
-                this.dialogVisible = false
-                setTimeout(() => {
-                  this.getlist()
-                }, 1500)
-              }
-            })
-          } else {
-            addNotice(data).then(res => {
-              console.log(res)
-              if (res.statusCode === '00000') {
-                this.dialogVisible = false
-                setTimeout(() => {
-                  this.getlist()
-                }, 1500)
-              }
-            })
-          }
-        }
-      })
-    },
+    // async zx_submit(formName) {
+    //   const _this = this
+    //   await _this.$refs[formName].validate((valid) => {
+    //     if (valid) {
+    //       this.addZxData.releaseTime = this.formatDate(new Date(this.addZxData.releaseTime).getTime())
+    //       const data = {
+    //         param: this.addZxData
+    //       }
+    //       if (this.addZxData.id) {
+    //         updateNotice(data).then(res => {
+    //           console.log(res)
+    //           if (res.statusCode === '00000') {
+    //             this.dialogVisible = false
+    //             setTimeout(() => {
+    //               this.getlist()
+    //             }, 1500)
+    //           }
+    //         })
+    //       } else {
+    //         addNotice(data).then(res => {
+    //           console.log(res)
+    //           if (res.statusCode === '00000') {
+    //             this.dialogVisible = false
+    //             setTimeout(() => {
+    //               this.getlist()
+    //             }, 1500)
+    //           }
+    //         })
+    //       }
+    //     }
+    //   })
+    // },
 
-    // 删除坐席
-    async removeZX(e) {
-      const data = {
-        data: {
-          id: e.id
-        }
+    // // 删除坐席
+    // async removeZX(e) {
+    //   const data = {
+    //     data: {
+    //       id: e.id
+    //     }
 
-      }
-      delNotice(data).then(res => {
-        console.log(res)
-        if (res.statusCode === '00000') {
-          this.$message({ message: '删除成功', type: 'success' })
-          this.getlist()
-        }
-      })
-    },
+    //   }
+    //   delNotice(data).then(res => {
+    //     console.log(res)
+    //     if (res.statusCode === '00000') {
+    //       this.$message({ message: '删除成功', type: 'success' })
+    //       this.getlist()
+    //     }
+    //   })
+    // },
     // 搜索
     search() {
       this.hwCurrent = 1
@@ -290,6 +263,16 @@ export default {
 </script>
 
 <style scoped>
+.caoNa{
+  display: inline-block;
+  font-weight: 500;
+}
+.caoz{
+  color: rgb(0, 196, 143);
+    cursor: pointer;
+    font-size: 14px;
+    padding-left: 15px;
+}
 .toolS{
   display: flex;
   justify-content: space-between;
