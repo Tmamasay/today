@@ -58,7 +58,7 @@ service.interceptors.response.use(
     const res = response.data
     // console.log(res)
     // 如果自定义代码不是00000，则判断为错误。
-    if (res.statusCode && res.statusCode !== '00000') {
+    if (res.statusCode && res.statusCode !== 0) {
       // if (response.statusCode === 401) {
 
       // }
@@ -93,7 +93,7 @@ service.interceptors.response.use(
         // return Promise.resolve(res || 'error')
       } else {
         Message({
-          message: res.message || 'Error',
+          message: res.statusMessage || 'Error',
           type: 'error',
           duration: 5 * 1000
         })
