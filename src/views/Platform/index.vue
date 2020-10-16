@@ -6,7 +6,7 @@
       </div>
       <div class="baseSt">
         <el-form ref="addZxData" label-position="left" label-width="80px" :model="addZxData" :rules="rulesZx">
-          <el-form-item label="缩略图：" prop="noticeImg">
+          <el-form-item label="轮播图：" prop="noticeImg">
             <div>
               <el-upload
                 list-type="picture-card"
@@ -14,8 +14,11 @@
                 :file-list="fileList"
                 :show-file-list="true"
                 :http-request="uploadFile"
-                :limit="1"
+                accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
+                :limit="6"
                 :on-change="handlePreview"
+                :on-remove="handleRemove"
+                :on-preview="handlePictureCardPreview"
                 :on-success="handleSuccess"
               >
                 <i class="el-icon-plus" />
@@ -23,17 +26,28 @@
                   提示：支持格式JPG，JPEG,PNG,PDF
                 </div>
               </el-upload>
+              <el-dialog :visible.sync="dialogVisibleImg">
+                <img width="100%" :src="dialogImageUrl" alt="">
+              </el-dialog>
             </div>
           </el-form-item>
           <el-form-item label="商品名" prop="remark">
             <el-input v-model="addZxData.remark" placeholder="请输入摘要" />
           </el-form-item>
-          <el-form-item label="所属分类" prop="remark">
+          <el-form-item label="所属行业" prop="remark">
             <el-select v-model="addZxData.remark" placeholder="请选择" style="width:90%">
-              <el-option label="超市" value="1" />
-              <el-option label="奶茶" value="2" />
-              <el-option label="母婴" value="3" />
+              <el-option v-for="item in classList" :key="item.id" :label="item.tradeName" :value="item.id" />
             </el-select>
+          </el-form-item>
+          <el-form-item label="行业类目" prop="remark">
+            <el-cascader
+              :options="options"
+              :props="{ checkStrictly: true }"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="展示价格" prop="remark">
+            <el-input v-model="addZxData.remark" placeholder="请输入展示价格" />
           </el-form-item>
           <el-form-item label="标签" prop="title">
             <el-tag
@@ -217,11 +231,21 @@
 
 <script>
 import { selectPageNotice, delNotice, fileUpload } from '@/api/chengxu'
+import { getTradeList, getGoodsTypeByAdmin } from '@/api/user'
 import EditorImage from '@/components/Tinymce/index' // 富文本编辑
 export default {
   components: { EditorImage },
   data() {
     return {
+      // 轮播图
+      imgList: [],
+      fileUidList: [],
+      classFyList: [],
+      delIndex: null,
+      classList: [],
+      checkOneTab: '',
+      // ======
+      dialogVisibleImg: false,
       step: 1,
       tableData: [],
 
@@ -287,8 +311,44 @@ export default {
   },
   mounted() {
     this.getlist()
+    this.getClassList()
   },
   methods: {
+    async getClassList() {
+      const _this = this
+
+      _this.loading = true
+      await getTradeList().then(res => {
+        console.log(res)
+        if (res.status) {
+          setTimeout(res => {
+            _this.loading = false
+          }, 300)
+          _this.classList = res.data
+          // this.checkOneTab = this.datalist[0].id
+          // this.getlist()
+        }
+      })
+    },
+    // 列表
+    async getFlList() {
+      const _this = this
+      var data = {
+        // tradeId: this.$route.query.tradeId
+        tradeId: this.checkOneTab
+      }
+      await getGoodsTypeByAdmin(data).then(res => {
+        console.log(res)
+        if (res.status) {
+          _this.classFyList = this.generateRoutes(res.data.children)
+          console.log(_this.classFyList)
+        }
+      })
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url
+      this.dialogVisibleImg = true
+    },
     tdRow(i) {
       // const arr = this.tableData
       // arr.map((_, j) => {
@@ -512,15 +572,14 @@ export default {
         title: ''
       }
     },
-    handleSuccess(response) {
-      console.log(response)
-      console.log('888888888888')
+    handleSuccess(file, fileList) {
+      console.log(file)
+      console.log(fileList)
     },
     uploadFile(e) {
       fileUpload(this.uploadData).then(res => {
         if (res) {
-          console.log(res)
-          this.addZxData.noticeImg = res.data
+          this.imgList.push(res.data)
           this.$message({
             message: '上传成功',
             type: 'success'
@@ -530,9 +589,18 @@ export default {
         }
       })
     },
+    handleRemove(file, fileList) {
+      console.log(file)
+      console.log(fileList)
+      this.delIndex = this.fileUidList.findIndex(el => el === file.uid)
+      this.imgList.splice(this.delIndex, 1)
+      this.fileUidList.splice(this.delIndex, 1)
+      console.log(this.imgList)
+    },
     // 获取上传文件信息
     handlePreview(file) {
       const _this = this
+      _this.fileUidList.push(file.uid)
       var formData = new FormData()
       formData.append('file', file.raw)
       _this.uploadData = formData

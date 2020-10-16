@@ -1,5 +1,16 @@
 import request from '@/utils/request'
 
+// T+===========T+新版本（不能删除）============》
+// 上传
+export function fileUpload(data) {
+  return request({
+    url: '/tpp-admin/file/fileUpload',
+    method: 'post',
+    data
+  })
+}
+// ===============================
+
 // 根据系统代码查询该系统所有菜单
 export function getSysMenus(data) {
   return request({
@@ -123,14 +134,6 @@ export function selectPageNotice(data) {
   })
 }
 
-// 上传
-export function fileUpload(data) {
-  return request({
-    url: '/th-manager-biz/login/fileUpload',
-    method: 'post',
-    data
-  })
-}
 // 新增资讯
 export function addNotice(data) {
   return request({
