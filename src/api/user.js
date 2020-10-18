@@ -164,3 +164,12 @@ export function updateGoodsByAdmin(data) {
   })
 }
 
+// 上架管理端商品SKU
+export function upGoodsSKUAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/upGoodsSKUAdmin',
+    method: 'post',
+    data
+  })
+}
+

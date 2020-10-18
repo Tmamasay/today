@@ -88,26 +88,50 @@
         >
           <el-table-column prop="keyName" label="属性名" />
           <el-table-column prop="valueName" label="属性值" />
-          <el-table-column prop="discountPrice" width="200" label="优惠价">
+
+          <el-table-column prop="price" label="价格" width="200">
             <template slot-scope="scope">
-              <el-form :ref="scope.row.id" :model="scope.row" :rules="rules">
-                <el-form-item prop="discountPrice">
-                  <el-input v-show="true" v-model="scope.row.discountPrice" placeholder="请输入优惠价格" />
+              <el-form :ref="`${scope.row.id}`" :model="scope.row" :rules="rules">
+                <el-form-item prop="price">
+                  <el-input v-model="scope.row.price" placeholder="请输入价格" />
                 </el-form-item>
               </el-form>
             </template>
           </el-table-column>
-          <el-table-column prop="price" label="价格" width="200">
+          <el-table-column prop="discountPrice" width="200" label="优惠价">
             <template slot-scope="scope">
-              <el-form :ref="scope.row.id" :model="scope.row" :rules="rules">
-                <el-form-item prop="price">
-                  <el-input v-show="true" v-model="scope.row.price" placeholder="请输入价格" />
+              <el-form :ref="`${scope.row.id}`" :model="scope.row" :rules="rules">
+                <el-form-item prop="discountPrice">
+                  <el-input v-model="scope.row.discountPrice" placeholder="请输入优惠价格" />
                 </el-form-item>
               </el-form>
             </template>
           </el-table-column>
 
-          <el-table-column prop="skuImg" label="封面图" />
+          <el-table-column width="200" prop="skuImg" label="封面图">
+            <template slot-scope="scope">
+
+              <div v-if="scope.row.id">
+                <el-upload
+                  list-type="picture-card"
+                  action
+                  :file-list="fileList"
+                  :show-file-list="true"
+                  :http-request="uploadFile"
+                  accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
+                  :limit="1"
+                  :on-change="handlePreview"
+                  :on-preview="handlePictureCardPreview"
+                >
+                  <i class="el-icon-plus" />
+                </el-upload>
+                <el-dialog :visible.sync="dialogVisibleImg">
+                  <img width="100%" :src="dialogImageUrl" alt="">
+                </el-dialog>
+              </div>
+
+            </template>
+          </el-table-column>
           <el-table-column prop="status" label="状态">
             <template slot-scope="scope">
               <span v-if="scope.row.status==='USE'" class="useSign">上架中</span>
@@ -120,8 +144,7 @@
           >
             <template slot-scope="scope">
               <el-button v-if="scope.row.status==='USE'" size="small" @click="disableGoodsAdmin(scope.row)">下架</el-button>
-              <el-button size="small" @click="goSkuUp(scope.row)">上架</el-button>
-              <el-button size="small" type="danger" @click="removeZX(scope.row)">删除</el-button>
+              <el-button v-if="scope.row.status==='STOP'" size="small" @click="goSkuUp(scope.row)">上架</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -131,11 +154,32 @@
 </template>
 
 <script>
-import { selectGoodsByAdmin, disableGoodsAdmin, selectSKUAdmin, checkTrade, addTrade, updateTrade, delTrade } from '@/api/user'
+import { selectGoodsByAdmin, upGoodsSKUAdmin, disableGoodsAdmin, selectSKUAdmin, checkTrade, addTrade, updateTrade, delTrade } from '@/api/user'
+import { fileUpload } from '@/api/chengxu'
 export default {
 
   data() {
+    // validator
+    const validatePrice = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error('请填写价格'))
+      } else {
+        callback()
+      }
+    }
+    const validateDiscount = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error('请填写优惠价格'))
+      } else {
+        callback()
+      }
+    }
     return {
+      dialogVisibleImg: false,
+      dialogImageUrl: null,
+      uploadImg: null,
+      fileList: [],
+      uploadData: null,
       SkuList: [],
       Size: 10, // 一页多少条
       Current: 1, // 页码
@@ -149,10 +193,10 @@ export default {
       loading: false, // loading加载
       rules: {
         price: [
-          { required: true, message: '请填写价格', trigger: 'blur' }
+          { required: true, validator: validatePrice, trigger: 'blur' }
         ],
         discountPrice: [
-          { required: true, message: '请填写优惠价格', trigger: 'blur' }
+          { required: true, validator: validateDiscount, trigger: 'blur' }
         ]
       }
 
@@ -162,6 +206,44 @@ export default {
     this.getlist()
   },
   methods: {
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url
+      this.dialogVisibleImg = true
+    },
+    uploadFileFM(e) {
+      fileUpload(this.uploadData).then(res => {
+        if (res) {
+          this.addCommodForm.imgOne = res.data
+          this.$message({
+            message: '上传成功',
+            type: 'success'
+          })
+        } else {
+          this.$message.error(res.status)
+        }
+      })
+    },
+    uploadFile(e) {
+      fileUpload(this.uploadData).then(res => {
+        if (res) {
+          this.uploadImg = res.data
+          this.$message({
+            message: '上传成功',
+            type: 'success'
+          })
+        } else {
+          this.$message.error(res.status)
+        }
+      })
+    },
+
+    // 获取上传文件信息
+    handlePreview(file) {
+      const _this = this
+      var formData = new FormData()
+      formData.append('file', file.raw)
+      _this.uploadData = formData
+    },
     goSkuEdit(row) {
       this.dialogVisible = true
       this.getSKUList(row.id)
@@ -186,9 +268,34 @@ export default {
       }
     },
     goSkuUp(row) {
+      if (!row.discountPrice) {
+        this.$message({
+          message: '请填写价格',
+          type: 'warning'
+        })
+        return
+      }
+      if (!row.price) {
+        this.$message({
+          message: '请填写优惠价格',
+          type: 'warning'
+        })
+        return
+      }
+      const _this = this
       this.$refs[row.id].validate((valid) => {
         if (valid) {
-          console.log(1)
+          upGoodsSKUAdmin({
+            discountPrice: +row.discountPrice,
+            id: row.id,
+            price: +row.price,
+            skuImg: this.uploadImg
+          }).then(res => {
+            if (res.status) {
+              _this.$message({ message: '操作成功', type: 'success' })
+              _this.getSKUList(row.goodsId)
+            }
+          })
         }
       })
     },

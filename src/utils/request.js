@@ -9,7 +9,7 @@ let needLoadingRequestCount = 0
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url=基本url+请求url
   // withCredentials:true，//跨域请求时发送cookies
-  timeout: 5000, // 请求超时
+  timeout: 15000, // 请求超时
   headers: {
     'Content-Type': 'application/json'
     // appToken: '77A6736D-5A05-4F8C-8B07-5E9F81D845C3' // 固定的渠道商token
