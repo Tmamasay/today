@@ -129,3 +129,38 @@ export function delTrade(data) {
     data
   })
 }
+// ======商品板块========
+// 删除行业类别
+export function addGoodsByAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/addGoodsByAdmin',
+    method: 'post',
+    data
+  })
+}
+// 分页管理端商品
+export function selectGoodsByAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/selectGoodsByAdmin',
+    method: 'post',
+    data
+  })
+}
+// 分页管理端商品SKU
+export function selectSKUAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/selectSKUAdmin',
+    method: 'post',
+    data
+  })
+}
+
+// 修改管理端商品
+export function updateGoodsByAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/updateGoodsByAdmin',
+    method: 'post',
+    data
+  })
+}
+

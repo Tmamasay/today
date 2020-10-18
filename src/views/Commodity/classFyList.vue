@@ -162,6 +162,7 @@ export default {
     this.getClassList()
   },
   methods: {
+
     showDetaiList(row, column, event) {
       this.classFyList = []
       this.checkOneTab = row.id

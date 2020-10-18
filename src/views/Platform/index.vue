@@ -5,8 +5,31 @@
         <p class="Ptitle">商品基本信息 <span class="ptFS">请您遵守国家相关规定，切勿上传低俗色情、暴力恐怖、谣言诈骗、侵权盗版等相关内容</span></p>
       </div>
       <div class="baseSt">
-        <el-form ref="addZxData" label-position="left" label-width="80px" :model="addZxData" :rules="rulesZx">
-          <el-form-item label="轮播图：" prop="noticeImg">
+        <el-form ref="addCommodForm" label-position="left" label-width="80px" :model="addCommodForm" :rules="ruleCommod">
+
+          <el-form-item label="封面图：" prop="imgList">
+            <el-upload
+              list-type="picture-card"
+              accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
+              action
+              :file-list="fileList"
+              :show-file-list="true"
+              :http-request="uploadFileFM"
+              :limit="1"
+              :on-change="handlePreview"
+              :on-preview="handlePictureCardPreview"
+              :on-success="handleSuccess"
+            >
+              <i class="el-icon-plus" />
+              <div slot="tip" class="el-upload__tip">
+                提示：支持格式JPG，JPEG,PNG,PDF
+              </div>
+              <el-dialog :visible.sync="dialogVisibleImg">
+                <img width="100%" :src="dialogImageUrl" alt="">
+              </el-dialog>
+            </el-upload>
+          </el-form-item>
+          <el-form-item label="轮播图：" prop="imgList">
             <div>
               <el-upload
                 list-type="picture-card"
@@ -31,25 +54,27 @@
               </el-dialog>
             </div>
           </el-form-item>
-          <el-form-item label="商品名" prop="remark">
-            <el-input v-model="addZxData.remark" placeholder="请输入摘要" />
+          <el-form-item label="商品名" prop="goodsName">
+            <el-input v-model="addCommodForm.goodsName" placeholder="请输入摘要" />
           </el-form-item>
-          <el-form-item label="所属行业" prop="remark">
-            <el-select v-model="addZxData.remark" placeholder="请选择" style="width:90%">
+          <el-form-item label="所属行业" prop="industry">
+            <el-select v-model="addCommodForm.industry" placeholder="请选择" style="width:90%" @change="tradeNaChange">
               <el-option v-for="item in classList" :key="item.id" :label="item.tradeName" :value="item.id" />
             </el-select>
           </el-form-item>
-          <el-form-item label="行业类目" prop="remark">
+          <el-form-item label="行业类目" prop="goodsTypeId">
             <el-cascader
-              :options="options"
-              :props="{ checkStrictly: true }"
-              clearable
+              v-model="addCommodForm.goodsTypeId"
+              :options="classFyList"
             />
           </el-form-item>
-          <el-form-item label="展示价格" prop="remark">
-            <el-input v-model="addZxData.remark" placeholder="请输入展示价格" />
+          <el-form-item label="展示价格" prop="showPrice">
+            <el-input v-model="addCommodForm.showPrice" placeholder="请输入展示价格" />
           </el-form-item>
-          <el-form-item label="标签" prop="title">
+          <el-form-item label="商品备注" prop="remakes">
+            <el-input v-model="addCommodForm.remakes" placeholder="请输入商品备注" />
+          </el-form-item>
+          <el-form-item label="商品标签" prop="labelNames">
             <el-tag
               v-for="tag in dynamicTags"
               :key="tag"
@@ -71,7 +96,7 @@
             />
             <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 添加标签</el-button>
           </el-form-item>
-          <el-form-item label="商品规格" prop="remark">
+          <el-form-item label="商品规格" prop="attributes">
             <div class="guiGe">
               <div class="guiOne">
                 <span>规格组：</span>
@@ -102,7 +127,7 @@
                 <span v-if="SpecnamicTags.length&&SpecnamicTags[index]">
                   <span>规格值：</span>
                   <el-tag
-                    v-for="tag in SpecnamicTags[index].value"
+                    v-for="tag in SpecnamicTags[index].attributeValue"
                     :key="tag"
                     closable
                     :disable-transitions="false"
@@ -125,16 +150,16 @@
               </div>
             </div>
           </el-form-item>
-          <el-form-item label="介绍：" prop="textBody">
-            <EditorImage :value="addZxData.textBody" @editlisten="geteditS" />
+          <el-form-item label="介绍：" prop="goodsDetails">
+            <EditorImage :value="addCommodForm.goodsDetails" @editlisten="geteditS" />
           </el-form-item>
           <!-- <el-form-item label="规格明细" /> -->
           <el-form-item>
-            <el-button type="primary" @click="zx_submit('addZxData')">下一步</el-button>
+            <el-button type="primary" @click="commodSubmit('addCommodForm')">下一步</el-button>
           </el-form-item>
         </el-form>
 
-        <!-- <div slot="footer" class="dialog-footer">
+      <!-- <div slot="footer" class="dialog-footer">
 
         </div> -->
       </div>
@@ -178,7 +203,7 @@
       width="50%"
     >
       <!-- <EditorImage v-if="dialogVisible" :value="content" @editlisten="geteditS" /> -->
-      <el-form v-if="dialogVisible" ref="addZxData" :label-position="labelPosition" label-width="140px" :model="addZxData" :rules="rulesZx">
+      <el-form v-if="dialogVisible" ref="addCommodForm" :label-position="labelPosition" label-width="140px" :model="addCommodForm" :rules="ruleCommod">
 
         <el-form-item label="上传缩略图：" prop="noticeImg">
           <div>
@@ -200,30 +225,30 @@
           </div>
         </el-form-item>
         <el-form-item label="摘要" prop="remark">
-          <el-input v-model="addZxData.remark" placeholder="请输入摘要" />
+          <el-input v-model="addCommodForm.remark" placeholder="请输入摘要" />
         </el-form-item>
         <el-form-item label="来源" prop="source">
-          <el-input v-model="addZxData.source" placeholder="请输入来源" />
+          <el-input v-model="addCommodForm.source" placeholder="请输入来源" />
         </el-form-item>
         <el-form-item label="标题" prop="title">
-          <el-input v-model="addZxData.title" placeholder="请输入标题" />
+          <el-input v-model="addCommodForm.title" placeholder="请输入标题" />
         </el-form-item>
         <el-form-item label="发布时间" prop="releaseTime">
           <el-date-picker
-            v-model="addZxData.releaseTime"
+            v-model="addCommodForm.releaseTime"
             type="datetime"
             placeholder="选择日期时间"
             align="right"
           />
 
         </el-form-item>
-        <el-form-item label="正文：" prop="textBody">
-          <EditorImage v-if="dialogVisible" :value="addZxData.textBody" @editlisten="geteditS" />
+        <el-form-item label="正文：" prop="goodsDetails">
+          <EditorImage v-if="dialogVisible" :value="addCommodForm.goodsDetails" @editlisten="geteditS" />
         </el-form-item>
 
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="zx_submit('addZxData')">确 定</el-button>
+        <el-button type="primary" @click="zx_submit('addCommodForm')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -231,19 +256,19 @@
 
 <script>
 import { selectPageNotice, delNotice, fileUpload } from '@/api/chengxu'
-import { getTradeList, getGoodsTypeByAdmin } from '@/api/user'
+import { getTradeList, getGoodsTypeByAdmin, addGoodsByAdmin } from '@/api/user'
 import EditorImage from '@/components/Tinymce/index' // 富文本编辑
 export default {
   components: { EditorImage },
   data() {
     return {
       // 轮播图
+      dialogImageUrl: null,
       imgList: [],
       fileUidList: [],
-      classFyList: [],
+      classFyList: [], // 行业容器
       delIndex: null,
       classList: [],
-      checkOneTab: '',
       // ======
       dialogVisibleImg: false,
       step: 1,
@@ -274,33 +299,56 @@ export default {
       total: 0, // 总数
       title: '', // 新增修改名称
       labelPosition: 'center', // 对齐方式
-      addZxData: {
-        noticeImg: '',
-        releaseTime: '',
-        remark: '',
-        source: '',
-        textBody: '',
-        title: ''
+      addCommodForm: {
+        goodsName: '', // 商品名称
+        imgOne: '', // 商品缩略图
+        imgList: [], // 轮播list
+        labelNames: '', // 商品标签数组
+        attributes: [], // 规格集合
+        showPrice: '', // 展示价格
+        industry: '', // 行业id
+        goodsTypeId: '', // 商品类别id
+        goodsDetails: '', // 商品详情
+        remakes: '', // 商品备注
+        status: 'STOP'// 商品状态("USE","上架","STOP","下架")
       },
-      rulesZx: {
-        noticeImg: [
+      ruleCommod: {
+        imgOne: [
           { required: true, message: '请上传缩略图', trigger: 'blur' }
         ],
-        remark: [
-          { required: true, message: '请输入摘要', trigger: 'blur' }
+        imgList: [
+          { required: true, message: '请上传轮播图', trigger: 'blur' }
         ],
-        source: [
-          { required: true, message: '请输入来源', trigger: 'blur' }
+        goodsName: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' }
         ],
-        title: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
+        // labelNames: [
+        //   { required: true, message: '请添加商品标签数组', trigger: 'blur' }
+        // ],
+        attributes: [
+          { required: true, message: '请添加商品规格', trigger: 'blur' }
         ],
-        releaseTime: [
-          { required: true, message: '请选择发布时间', trigger: 'change' }
+        showPrice: [
+          { required: true, message: '请输入展示价格', trigger: 'blur' }
         ],
-        textBody: [
-          { required: true, message: '请输入正文', trigger: 'blur' }
+        industry: [
+          { required: true, message: '请选择所属行业', trigger: 'chagne' }
+        ],
+        goodsTypeId: [
+          { required: true, message: '请选择行业类目', trigger: 'chagne' }
+        ],
+        goodsDetails: [
+          { required: true, message: '请添加商品详情', trigger: 'blur' }
+        ],
+        remakes: [
+          { required: true, message: '请添加商品备注', trigger: 'blur' }
         ]
+        //  status: [
+        //   { required: true, message: '请添加商品商品规格', trigger: 'blur' }
+        // ],
+        // releaseTime: [
+        //   { required: true, message: '请选择发布时间', trigger: 'change' }
+        // ]
       }
 
     }
@@ -314,6 +362,23 @@ export default {
     this.getClassList()
   },
   methods: {
+    generateRoutes(routes) {
+      const res = []
+      routes.forEach(route => {
+        const data = {
+          value: route.id,
+          label: route.name
+        }
+        if (route.children && route.children.length) {
+          data.children = this.generateRoutes(route.children)
+        }
+        res.push(data)
+      })
+      return res
+    },
+    tradeNaChange(value) {
+      this.getFlList(value)
+    },
     async getClassList() {
       const _this = this
 
@@ -325,17 +390,15 @@ export default {
             _this.loading = false
           }, 300)
           _this.classList = res.data
-          // this.checkOneTab = this.datalist[0].id
-          // this.getlist()
         }
       })
     },
     // 列表
-    async getFlList() {
+    async getFlList(value) {
       const _this = this
       var data = {
         // tradeId: this.$route.query.tradeId
-        tradeId: this.checkOneTab
+        tradeId: value
       }
       await getGoodsTypeByAdmin(data).then(res => {
         console.log(res)
@@ -362,30 +425,33 @@ export default {
       // })
     },
     arrp(arr) {
-    // 编辑原数组格式
-      if (arr[0].value) {
-        arr = arr.map((item) => {
-          item = item.value
-          return item
-        })
-      }
-      if (arr.length === 1) {
-        // 最终合并成一个
-        return arr[0]
-      } else {	// 有两个子数组就合并
-        const arrySon = []
-        // 将组合放到新数组中
-        arr[0].forEach((_, index) => {
-          arr[1].forEach((_, index1) => {
-            arrySon.push([].concat(arr[0][index], arr[1][index1]))
-          })
-        })
-        // 新数组并入原数组,去除合并的前两个数组
-        arr[0] = arrySon
-        arr.splice(1, 1)
-        // 递归
-        return this.arrp(arr)
-      }
+    // // 编辑原数组格式
+    //   if (arr[0].value) {
+    //     arr = arr.map((item) => {
+    //       item = item.value
+    //       return item
+    //     })
+    //   }
+    //   if (arr.length === 1) {
+    //     // 最终合并成一个
+    //     return arr[0]
+    //   } else {	// 有两个子数组就合并
+    //     const arrySon = []
+    //     // 将组合放到新数组中
+    //     arr[0].forEach((_, index) => {
+    //       arr[1].forEach((_, index1) => {
+    //         arrySon.push([].concat(arr[0][index], arr[1][index1]))
+    //       })
+    //     })
+    //     // 新数组并入原数组,去除合并的前两个数组
+    //     arr[0] = arrySon
+    //     arr.splice(1, 1)
+    //     // 递归
+    //     return this.arrp(arr)
+      // }
+
+      console.log(arr)
+      console.log('--------------------------')
     },
 
     formatDAta(data) {
@@ -484,22 +550,22 @@ export default {
       // alert(key)
       const inputValue = this.SpecinputValue
       if (inputValue) {
-        const foundIndex = this.SpecnamicTags.findIndex(el => el.name === key)
+        const foundIndex = this.SpecnamicTags.findIndex(el => el.attributeKey === key)
         if (foundIndex !== -1) {
           // alert(2)
-          this.SpecnamicTags[foundIndex].value.push(inputValue)
+          this.SpecnamicTags[foundIndex].attributeValue.push(inputValue)
         } else {
           // alert(1)
           this.SpecnamicTags.push({
-            name: '',
-            value: []
+            attributeKey: '',
+            attributeValue: []
           })
-          this.SpecnamicTags[index].name = key
-          this.SpecnamicTags[index].value.push(inputValue)
+          this.SpecnamicTags[index].attributeKey = key
+          this.SpecnamicTags[index].attributeValue.push(inputValue)
           console.log(this.SpecnamicTags)
         }
-        this.tableData = this.arrp(this.SpecnamicTags)
-        console.log(this.arrp(this.SpecnamicTags))
+        this.addCommodForm.attributes = this.SpecnamicTags
+        console.log(this.addCommodForm.attributes)
         console.log('-0-----------')
       }
 
@@ -515,7 +581,7 @@ export default {
     },
     goEdit(row) {
       this.dialogVisible = true
-      this.addZxData = {
+      this.addCommodForm = {
         id: row.id,
         noticeImg: row.noticeImg,
         releaseTime: row.releaseTime,
@@ -563,7 +629,7 @@ export default {
     addZx() {
       this.fileList = []
       this.dialogVisible = true
-      this.addZxData = {
+      this.addCommodForm = {
         noticeImg: '',
         releaseTime: '',
         remark: '',
@@ -576,10 +642,23 @@ export default {
       console.log(file)
       console.log(fileList)
     },
+    uploadFileFM(e) {
+      fileUpload(this.uploadData).then(res => {
+        if (res) {
+          this.addCommodForm.imgOne = res.data
+          this.$message({
+            message: '上传成功',
+            type: 'success'
+          })
+        } else {
+          this.$message.error(res.status)
+        }
+      })
+    },
     uploadFile(e) {
       fileUpload(this.uploadData).then(res => {
         if (res) {
-          this.imgList.push(res.data)
+          this.addCommodForm.imgList.push(res.data)
           this.$message({
             message: '上传成功',
             type: 'success'
@@ -606,7 +685,7 @@ export default {
       _this.uploadData = formData
     },
     geteditS(data) {
-      this.addZxData.textBody = data
+      this.addCommodForm.goodsDetails = data
     },
 
     // 列表
@@ -633,39 +712,47 @@ export default {
       })
     },
     // 新增
-    async zx_submit(formName) {
-      this.step = 2
-      console.log(this.SpecnamicTags)
-      // const _this = this
-      // await _this.$refs[formName].validate((valid) => {
-      //   if (valid) {
-      //     this.addZxData.releaseTime = this.formatDate2(new Date(this.addZxData.releaseTime).getTime())
-      //     const data = {
-      //       param: this.addZxData
-      //     }
-      //     if (this.addZxData.id) {
-      //       updateNotice(data).then(res => {
-      //         console.log(res)
-      //         if (res.statusCode === '00000') {
-      //           this.dialogVisible = false
-      //           setTimeout(() => {
-      //             this.getlist()
-      //           }, 1500)
-      //         }
-      //       })
-      //     } else {
-      //       addNotice(data).then(res => {
-      //         console.log(res)
-      //         if (res.statusCode === '00000') {
-      //           this.dialogVisible = false
-      //           setTimeout(() => {
-      //             this.getlist()
-      //           }, 1500)
-      //         }
-      //       })
-      //     }
-      //   }
-      // })
+    async commodSubmit(formName) {
+      // this.step = 2
+      // console.log(this.SpecnamicTags)
+      const _this = this
+      await _this.$refs[formName].validate((valid) => {
+        if (valid) {
+          const data = {
+            attributes: this.addCommodForm.attributes,
+            goodsDetails: this.addCommodForm.goodsDetails,
+            goodsName: this.addCommodForm.goodsName,
+            goodsTypeId: this.addCommodForm.goodsTypeId[this.addCommodForm.goodsTypeId.length - 1],
+            imgOne: this.addCommodForm.imgOne,
+            imgList: this.addCommodForm.imgList.join(','),
+            labelNames: this.dynamicTags,
+            remakes: this.addCommodForm.remakes,
+            showPrice: +this.addCommodForm.showPrice,
+            status: this.addCommodForm.status
+          }
+          if (this.addCommodForm.id) {
+            // updateNotice(data).then(res => {
+            //   console.log(res)
+            //   if (res.statusCode === '00000') {
+            //     this.dialogVisible = false
+            //     setTimeout(() => {
+            //       this.getlist()
+            //     }, 1500)
+            //   }
+            // })
+          } else {
+            addGoodsByAdmin(data).then(res => {
+              console.log(res)
+              if (res.statusCode === '00000') {
+                this.dialogVisible = false
+                setTimeout(() => {
+                  this.getlist()
+                }, 1500)
+              }
+            })
+          }
+        }
+      })
     },
 
     // 删除坐席
