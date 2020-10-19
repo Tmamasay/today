@@ -7,7 +7,7 @@
       <div class="baseSt">
         <el-form ref="addCommodForm" label-position="left" label-width="80px" :model="addCommodForm" :rules="ruleCommod">
 
-          <el-form-item label="封面图：" prop="imgList">
+          <el-form-item label="封面图：" prop="imgOne">
             <el-upload
               list-type="picture-card"
               accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
@@ -34,11 +34,12 @@
               <el-upload
                 list-type="picture-card"
                 action
-                :file-list="fileList"
+                :file-list="fileList2"
                 :show-file-list="true"
                 :http-request="uploadFile"
                 accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
                 :limit="6"
+                :multiple="true"
                 :on-change="handlePreview"
                 :on-remove="handleRemove"
                 :on-preview="handlePictureCardPreview"
@@ -164,99 +165,13 @@
         </div> -->
       </div>
     </div>
-    <div v-if="+step===2">
-      <el-button type="primary" @click="goPre">返回上一步</el-button>
-      <div class="toolS">
-        <p class="Ptitle">商品详细信息<span class="ptFS">请您按照实际情况填写商品的SKU信息及价格</span> </p>
-      </div>
-      <div>
-        <div className="table-content">
-          <table className="spec-table" border="1">
-            <thead>
-              <tr>
-                <th v-for="item in GuienamicTags" :key="item">{{ item }}</th>
-                <th>SKU编码</th>
-                <th>单买价格</th>
-                <th>拼团价格</th>
-                <!-- <th>服务佣金</th> -->
-                <th>可售库存</th>
-              </tr>
-              <tr v-for="item1 in tableData" :key="item1">
-                <td v-for="item2 in item1" :key="item2">{{ item2 }}</td>
-                <td><el-input placeholder="请输入内容" size="small" /></td>
-                <td><el-input placeholder="请输入内容" size="small" /></td>
-                <td><el-input placeholder="请输入内容" size="small" /></td>
-                <!-- <td><el-input placeholder="请输入内容" size="small" /></td> -->
-                <td><el-input placeholder="请输入内容" size="small" /></td>
-              </tr>
 
-            </thead>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <el-dialog
-      title="资讯操作"
-      :visible.sync="dialogVisible"
-      :close-on-click-modal="false"
-      width="50%"
-    >
-      <!-- <EditorImage v-if="dialogVisible" :value="content" @editlisten="geteditS" /> -->
-      <el-form v-if="dialogVisible" ref="addCommodForm" :label-position="labelPosition" label-width="140px" :model="addCommodForm" :rules="ruleCommod">
-
-        <el-form-item label="上传缩略图：" prop="noticeImg">
-          <div>
-            <el-upload
-              list-type="picture-card"
-              action
-              :file-list="fileList"
-              :show-file-list="true"
-              :http-request="uploadFile"
-              :limit="1"
-              :on-change="handlePreview"
-              :on-success="handleSuccess"
-            >
-              <i class="el-icon-plus" />
-              <div slot="tip" class="el-upload__tip">
-                提示：支持格式JPG，JPEG,PNG,PDF
-              </div>
-            </el-upload>
-          </div>
-        </el-form-item>
-        <el-form-item label="摘要" prop="remark">
-          <el-input v-model="addCommodForm.remark" placeholder="请输入摘要" />
-        </el-form-item>
-        <el-form-item label="来源" prop="source">
-          <el-input v-model="addCommodForm.source" placeholder="请输入来源" />
-        </el-form-item>
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="addCommodForm.title" placeholder="请输入标题" />
-        </el-form-item>
-        <el-form-item label="发布时间" prop="releaseTime">
-          <el-date-picker
-            v-model="addCommodForm.releaseTime"
-            type="datetime"
-            placeholder="选择日期时间"
-            align="right"
-          />
-
-        </el-form-item>
-        <el-form-item label="正文：" prop="goodsDetails">
-          <EditorImage v-if="dialogVisible" :value="addCommodForm.goodsDetails" @editlisten="geteditS" />
-        </el-form-item>
-
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="zx_submit('addCommodForm')">确 定</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { selectPageNotice, delNotice, fileUpload } from '@/api/chengxu'
-import { getTradeList, getGoodsTypeByAdmin, addGoodsByAdmin } from '@/api/user'
+import { fileUpload } from '@/api/chengxu'
+import { getTradeList, updateGoodsByAdmin, getGoodsTypeByAdmin, getGoodsOneByAdmin, addGoodsByAdmin } from '@/api/user'
 import EditorImage from '@/components/Tinymce/index' // 富文本编辑
 export default {
   components: { EditorImage },
@@ -289,6 +204,7 @@ export default {
       SpecinputValue: '',
 
       fileList: [],
+      fileList2: [],
       uploadData: null,
       dialogVisible: false,
       time: null,
@@ -358,7 +274,10 @@ export default {
     // this.choiceBm()
   },
   mounted() {
-    this.getlist()
+    if (this.$route.query.goodsId) {
+      this.getlist(this.$route.query.goodsId)
+    }
+
     this.getClassList()
   },
   methods: {
@@ -411,47 +330,6 @@ export default {
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogVisibleImg = true
-    },
-    tdRow(i) {
-      // const arr = this.tableData
-      // arr.map((_, j) => {
-      //   let td
-      //   if (i % row[j] === 0 && row[j] > 1) {
-      //     td = <td rowSpan={row[j]} key={j}>{res[i][j].name}</td>
-      //   } else if (row[j] === 1) {
-      //     res[i] instanceof Array ? td = <td key={j}>{res[i][j].name}</td> : td = <td key={j}>{res[i].name}</td>
-      //   }
-      //   return td
-      // })
-    },
-    arrp(arr) {
-    // // 编辑原数组格式
-    //   if (arr[0].value) {
-    //     arr = arr.map((item) => {
-    //       item = item.value
-    //       return item
-    //     })
-    //   }
-    //   if (arr.length === 1) {
-    //     // 最终合并成一个
-    //     return arr[0]
-    //   } else {	// 有两个子数组就合并
-    //     const arrySon = []
-    //     // 将组合放到新数组中
-    //     arr[0].forEach((_, index) => {
-    //       arr[1].forEach((_, index1) => {
-    //         arrySon.push([].concat(arr[0][index], arr[1][index1]))
-    //       })
-    //     })
-    //     // 新数组并入原数组,去除合并的前两个数组
-    //     arr[0] = arrySon
-    //     arr.splice(1, 1)
-    //     // 递归
-    //     return this.arrp(arr)
-      // }
-
-      console.log(arr)
-      console.log('--------------------------')
     },
 
     formatDAta(data) {
@@ -594,50 +472,7 @@ export default {
         url: row.noticeImg
       })
     },
-    // 时间戳转换
-    formatDate(row) {
-      const date = new Date(row.releaseTime)
-      const y = date.getFullYear()
-      let MM = date.getMonth() + 1
-      MM = MM < 10 ? ('0' + MM) : MM
-      let d = date.getDate()
-      d = d < 10 ? ('0' + d) : d
-      let h = date.getHours()
-      h = h < 10 ? ('0' + h) : h
-      let m = date.getMinutes()
-      m = m < 10 ? ('0' + m) : m
-      let s = date.getSeconds()
-      s = s < 10 ? ('0' + s) : s
-      return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
-    },
-    // 时间戳转换
-    formatDate2(value) {
-      const date = new Date(value)
-      const y = date.getFullYear()
-      let MM = date.getMonth() + 1
-      MM = MM < 10 ? ('0' + MM) : MM
-      let d = date.getDate()
-      d = d < 10 ? ('0' + d) : d
-      let h = date.getHours()
-      h = h < 10 ? ('0' + h) : h
-      let m = date.getMinutes()
-      m = m < 10 ? ('0' + m) : m
-      let s = date.getSeconds()
-      s = s < 10 ? ('0' + s) : s
-      return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
-    },
-    addZx() {
-      this.fileList = []
-      this.dialogVisible = true
-      this.addCommodForm = {
-        noticeImg: '',
-        releaseTime: '',
-        remark: '',
-        source: '',
-        textBody: '',
-        title: ''
-      }
-    },
+
     handleSuccess(file, fileList) {
       console.log(file)
       console.log(fileList)
@@ -670,11 +505,16 @@ export default {
     },
     handleRemove(file, fileList) {
       console.log(file)
-      console.log(fileList)
-      this.delIndex = this.fileUidList.findIndex(el => el === file.uid)
-      this.imgList.splice(this.delIndex, 1)
-      this.fileUidList.splice(this.delIndex, 1)
-      console.log(this.imgList)
+      if (this.fileUidList.length) {
+        this.delIndex = this.fileUidList.findIndex(el => el === file.uid)
+        this.addCommodForm.imgList.splice(this.delIndex, 1)
+        this.fileUidList.splice(this.delIndex, 1)
+        // console.log(this.imgList)
+      } else {
+        // console.log(this.imgList)
+        const _AU = this.addCommodForm.imgList.findIndex(el => el === file.url)
+        this.addCommodForm.imgList.splice(_AU, 1)
+      }
     },
     // 获取上传文件信息
     handlePreview(file) {
@@ -689,25 +529,55 @@ export default {
     },
 
     // 列表
-    async getlist() {
-      const _this = this
-      _this.loading = true
+    async getlist(id) {
       var data = {
-        param: {
-          startTime: _this.time ? new Date(_this.time[0]).getTime() : '',
-          endTime: _this.time ? new Date(_this.time[1]).getTime() + 86399999 : '',
-          pageNum: _this.hwCurrent,
-          pageSize: _this.hwSize
-        }
+        id: id
       }
-      await selectPageNotice(data).then(res => {
+      await getGoodsOneByAdmin(data).then(res => {
         console.log(res)
-        if (res.statusCode === '00000') {
-          setTimeout(res => {
-            _this.loading = false
-          }, 300)
-          _this.dataList = res.data.records
-          _this.total = +res.data.total
+        if (res.status) {
+          this.dynamicTags = []
+          this.GuienamicTags = []
+          this.SpecnamicTags = []
+          this.getFlList(res.data.goods.tradeId)
+          // this.addCommodForm.attributes = res.data.keyValus
+          this.addCommodForm.id = res.data.goods.id
+          this.addCommodForm.goodsDetails = res.data.goods.goodsDetails
+          this.addCommodForm.goodsName = res.data.goods.goodsName
+          this.addCommodForm.imgOne = res.data.goods.imgOne
+
+          // this.imgList = res.data.goods.imgList.split(',')
+          this.addCommodForm.imgList = res.data.goods.imgList.split(',')
+          res.data.lables.forEach(element => {
+            this.dynamicTags.push(element.labelName)
+          })
+          const listIMG = res.data.goods.imgList.split(',')
+          listIMG.forEach(element => {
+            this.fileList2.push({
+              url: element
+            })
+          })
+          this.fileList.push({
+            url: res.data.goods.imgOne
+          })
+          res.data.keyValus.forEach(element => {
+            this.GuienamicTags.push(element.keyName)
+            const _Floy = {
+              attributeKey: '',
+              attributeValue: []
+            }
+            element.values.forEach(el => {
+              _Floy.attributeKey = element.keyName
+              _Floy.attributeValue.push(el.valueName)
+            })
+            this.SpecnamicTags.push(_Floy)
+            this.addCommodForm.attributes = this.SpecnamicTags
+          })
+          this.addCommodForm.industry = `${res.data.goods.tradeId}`
+          this.addCommodForm.goodsTypeId = `${res.data.goods.goodsTypeId}`
+          this.addCommodForm.remakes = res.data.goods.remakes
+          this.addCommodForm.showPrice = res.data.goods.showPrice
+          this.addCommodForm.status = res.data.goods.status
         }
       })
     },
@@ -719,10 +589,11 @@ export default {
       await _this.$refs[formName].validate((valid) => {
         if (valid) {
           const data = {
+            id: this.addCommodForm.id || null,
             attributes: this.addCommodForm.attributes,
             goodsDetails: this.addCommodForm.goodsDetails,
             goodsName: this.addCommodForm.goodsName,
-            goodsTypeId: this.addCommodForm.goodsTypeId[this.addCommodForm.goodsTypeId.length - 1],
+            goodsTypeId: typeof (this.addCommodForm.goodsTypeId) === 'string' ? this.addCommodForm.goodsTypeId : this.addCommodForm.goodsTypeId[this.addCommodForm.goodsTypeId.length - 1],
             imgOne: this.addCommodForm.imgOne,
             imgList: this.addCommodForm.imgList.join(','),
             labelNames: this.dynamicTags,
@@ -731,66 +602,46 @@ export default {
             status: this.addCommodForm.status
           }
           if (this.addCommodForm.id) {
-            // updateNotice(data).then(res => {
-            //   console.log(res)
-            //   if (res.statusCode === '00000') {
-            //     this.dialogVisible = false
-            //     setTimeout(() => {
-            //       this.getlist()
-            //     }, 1500)
-            //   }
-            // })
+            // const data2 = {
+            //   id: this.addCommodForm.id,
+            //   attributes: this.addCommodForm.attributes,
+            //   goodsDetails: this.addCommodForm.goodsDetails,
+            //   goodsName: this.addCommodForm.goodsName,
+            //   goodsTypeId: this.addCommodForm.goodsTypeId[this.addCommodForm.goodsTypeId.length - 1],
+            //   imgOne: this.addCommodForm.imgOne,
+            //   imgList: this.addCommodForm.imgList.join(','),
+            //   labelNames: this.dynamicTags,
+            //   remakes: this.addCommodForm.remakes,
+            //   showPrice: +this.addCommodForm.showPrice,
+            //   status: this.addCommodForm.status
+            // }
+            updateGoodsByAdmin(data).then(res => {
+              if (res.status) {
+                this.$message({
+                  message: '操作成功',
+                  type: 'success'
+                })
+                this.$router.go(-1)
+              }
+            })
           } else {
             addGoodsByAdmin(data).then(res => {
-              console.log(res)
-              if (res.statusCode === '00000') {
-                this.dialogVisible = false
-                setTimeout(() => {
-                  this.getlist()
-                }, 1500)
+              if (res.status) {
+                this.$message({
+                  message: '操作成功',
+                  type: 'success'
+                })
+                this.$router.go(-1)
+                // setTimeout(() => {
+                //   this.getlist()
+                // }, 1500)
               }
             })
           }
         }
       })
-    },
-
-    // 删除坐席
-    async removeZX(e) {
-      const data = {
-        data: {
-          id: e.id
-        }
-
-      }
-      delNotice(data).then(res => {
-        console.log(res)
-        if (res.statusCode === '00000') {
-          this.$message({ message: '删除成功', type: 'success' })
-          this.getlist()
-        }
-      })
-    },
-    // 搜索
-    search() {
-      this.hwCurrent = 1
-      this.getlist()
-    },
-    // 修改表格头部颜色
-    tableHeaderColor({ row, column, rowIndex, columnIndex }) {
-      if (rowIndex === 0) {
-        return 'background:rgba(232,243,253,1);color:rgba(54,52,69,1);border-right:1px solid #fff'
-      }
-    },
-    // 分页
-    handleSizeChange(val) {
-      this.hwSize = val
-      this.getlist()
-    },
-    handleCurrentChange(val) {
-      this.hwCurrent = val
-      this.getlist()
     }
+
   }
 }
 </script>

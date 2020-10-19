@@ -172,4 +172,28 @@ export function upGoodsSKUAdmin(data) {
     data
   })
 }
+// 下架管理端商品SKU
+export function downGoodsSKUAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/downGoodsSKUAdmin',
+    method: 'post',
+    data
+  })
+}
+// 下架管理端商品
+export function disableGoodsAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/disableGoodsAdmin',
+    method: 'post',
+    data
+  })
+}
 
+// (修改前)单查管理端商品
+export function getGoodsOneByAdmin(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/getGoodsOneByAdmin',
+    method: 'post',
+    data
+  })
+}

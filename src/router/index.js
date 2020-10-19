@@ -52,7 +52,12 @@ export const constantRoutes = [
       {
         path: 'detailOrder',
         component: () => import('@/views/userManager/detailOrder')
+      },
+      {
+        path: 'platform',
+        component: () => import('@/views/Platform/index')
       }
+
     ]
   },
   {

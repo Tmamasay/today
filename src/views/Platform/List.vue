@@ -1,7 +1,7 @@
 <template>
   <div class="xfjl_box shaowAll">
     <div class="toolS">
-      <el-button type="primary" style="margin-bottom:20px" @click="addClassFy">新增行业</el-button>
+      <el-button type="primary" style="margin-bottom:20px" @click="goAdd">新增商品</el-button>
       <!-- <p class="Ptitle">会员列表</p> -->
       <!-- <el-form :inline="true" class="demo-form-inline">
         <el-form-item label="">
@@ -56,7 +56,7 @@
         <template slot-scope="scope">
           <el-button v-if="scope.row.status==='USE'" size="small" @click="disableGoodsAdmin(scope.row)">下架</el-button>
           <el-button size="small" @click="goSkuEdit(scope.row)">SKU管理</el-button>
-          <el-button size="small" type="danger" @click="removeZX(scope.row)">删除</el-button>
+          <el-button size="small" type="danger" @click="goEdit(scope.row)">编辑</el-button>
 
         </template>
       </el-table-column>
@@ -73,23 +73,26 @@
       />
     </div>
     <el-dialog
-      title="SKU操作"
+      :title="skuTitle"
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
-      width="60%"
+      width="80%"
     >
-      <div>
+      <div v-if="dialogVisible">
+        <!-- <span style="font-weight: 600;">商品名称：{{ SkuList.goods.goodsName }}</span>
+        <span style="font-weight: 600;padding-left:15px">封面价格：{{ SkuList.goods.showPrice }}</span> -->
         <el-table
           v-loading="loading"
           :data="SkuList.skuList"
           tooltip-effect="dark"
+          height="600"
           style="width:95%;margin:10px auto 20px auto;"
           highlight-current-row
         >
           <el-table-column prop="keyName" label="属性名" />
           <el-table-column prop="valueName" label="属性值" />
 
-          <el-table-column prop="price" label="价格" width="200">
+          <el-table-column prop="price" label="价格" width="150">
             <template slot-scope="scope">
               <el-form :ref="`${scope.row.id}`" :model="scope.row" :rules="rules">
                 <el-form-item prop="price">
@@ -98,7 +101,7 @@
               </el-form>
             </template>
           </el-table-column>
-          <el-table-column prop="discountPrice" width="200" label="优惠价">
+          <el-table-column prop="discountPrice" width="150" label="优惠价">
             <template slot-scope="scope">
               <el-form :ref="`${scope.row.id}`" :model="scope.row" :rules="rules">
                 <el-form-item prop="discountPrice">
@@ -108,20 +111,22 @@
             </template>
           </el-table-column>
 
-          <el-table-column width="200" prop="skuImg" label="封面图">
+          <el-table-column width="350" prop="skuImg" label="封面图">
             <template slot-scope="scope">
 
               <div v-if="scope.row.id">
                 <el-upload
                   list-type="picture-card"
                   action
-                  :file-list="fileList"
+                  :file-list="showFlie(scope.row)"
                   :show-file-list="true"
                   :http-request="uploadFile"
                   accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
                   :limit="1"
+                  :on-remove="handleRemove"
                   :on-change="handlePreview"
                   :on-preview="handlePictureCardPreview"
+                  :on-exceed="handleExceed"
                 >
                   <i class="el-icon-plus" />
                 </el-upload>
@@ -143,7 +148,7 @@
             width="200"
           >
             <template slot-scope="scope">
-              <el-button v-if="scope.row.status==='USE'" size="small" @click="disableGoodsAdmin(scope.row)">下架</el-button>
+              <el-button v-if="scope.row.status==='USE'" size="small" @click="downGoodsSKUAdmin(scope.row)">下架</el-button>
               <el-button v-if="scope.row.status==='STOP'" size="small" @click="goSkuUp(scope.row)">上架</el-button>
             </template>
           </el-table-column>
@@ -154,7 +159,7 @@
 </template>
 
 <script>
-import { selectGoodsByAdmin, upGoodsSKUAdmin, disableGoodsAdmin, selectSKUAdmin, checkTrade, addTrade, updateTrade, delTrade } from '@/api/user'
+import { selectGoodsByAdmin, upGoodsSKUAdmin, downGoodsSKUAdmin, disableGoodsAdmin, selectSKUAdmin } from '@/api/user'
 import { fileUpload } from '@/api/chengxu'
 export default {
 
@@ -181,6 +186,7 @@ export default {
       fileList: [],
       uploadData: null,
       SkuList: [],
+      skuTitle: '',
       Size: 10, // 一页多少条
       Current: 1, // 页码
       total: 0, // 总数
@@ -206,6 +212,27 @@ export default {
     this.getlist()
   },
   methods: {
+    // 下架
+    downGoodsSKUAdmin(row) {
+      downGoodsSKUAdmin({
+        id: row.id
+        // tradeName: row.tradeName
+      }).then(res => {
+        if (res.status) {
+          this.$message({ message: '操作成功', type: 'success' })
+          this.getSKUList(row.goodsId)
+        }
+      })
+    },
+    handleExceed(file) {
+      this.$message({
+        message: '封面文件只允许上传一张，如需重新上传请删除已存在封面',
+        type: 'warning'
+      })
+    },
+    handleRemove(file) {
+      console.log(file)
+    },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogVisibleImg = true
@@ -252,7 +279,7 @@ export default {
     disableGoodsAdmin(row) {
       disableGoodsAdmin({
         id: row.id
-        // tradeName: row.tradeName
+
       }).then(res => {
         if (res.status) {
           this.$message({ message: '操作成功', type: 'success' })
@@ -261,11 +288,7 @@ export default {
       })
     },
     goEdit(row) {
-      this.dialogVisible = true
-      this.addClassfy = {
-        id: row.id,
-        className: row.tradeName
-      }
+      this.$router.push({ path: '/platform', query: { goodsId: row.id }})
     },
     goSkuUp(row) {
       if (!row.discountPrice) {
@@ -299,46 +322,9 @@ export default {
         }
       })
     },
-    async zx_submit(formName) {
-      const _this = this
-      await _this.$refs[formName].validate((valid) => {
-        if (valid) {
-          if (!this.addClassfy.id) {
-            // this.yhData.password = ttyMD5(this.yhData.password)
-            const _param = {
-              tradeName: this.addClassfy.className
-            }
-            addTrade(_param).then(res => {
-              if (res.status) {
-                _this.$message({ message: '操作成功', type: 'success' })
-                _this.dialogVisible = false
-                _this.getlist()
-              }
-            })
-          } else {
-            const _param2 = {
-              id: this.addClassfy.id,
-              tradeName: this.addClassfy.className
-            }
-            updateTrade(_param2).then(res => {
-              if (res.status) {
-                _this.$message({ message: '操作成功', type: 'success' })
-                _this.dialogVisible = false
-                _this.getlist()
-              }
-            })
-          }
-        }
-      })
-    },
-    addClassFy() {
-      this.dialogVisible = true
-      this.addClassfy = {
-        className: ''
-      }
-    },
-    goClassFy(row) {
-      this.$router.push({ path: '/commoditList', query: { tradeId: row.id }})
+
+    goAdd(row) {
+      this.$router.push({ path: '/platform' })
     },
     getlist() {
       const _this = this
@@ -368,10 +354,24 @@ export default {
           setTimeout(res => {
             _this.loading = false
           }, 300)
+
           _this.SkuList = res.data
+          _this.skuTitle = `SKU操作—${res.data.goods.goodsName}`
+          console.log(_this.SkuList)
           // _this.total = res.data.total
         }
       })
+    },
+    showFlie(fileU) {
+      const ShowArr = []
+      if (!fileU.skuImg) {
+        return ShowArr
+      }
+
+      ShowArr.push({
+        url: fileU.skuImg
+      })
+      return ShowArr
     },
     // 搜索
     sousuo() {
