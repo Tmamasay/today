@@ -197,3 +197,12 @@ export function getGoodsOneByAdmin(data) {
     data
   })
 }
+
+// 将商品导入渠道商商品库
+export function issueGoodsToStore(data) {
+  return request({
+    url: '/tpp-admin/goodsManager/issueGoodsToStore',
+    method: 'post',
+    data
+  })
+}

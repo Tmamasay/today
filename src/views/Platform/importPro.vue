@@ -12,7 +12,7 @@
       </el-form>
     </div>
     <el-table
-      ref="multipleTable"
+      ref="multipleTable1"
       v-loading="loading"
       :data="datalist"
       tooltip-effect="dark"
@@ -102,13 +102,14 @@
           </el-form-item>
         </el-form>
       </div>
-
+      <p v-if="checkGoods.length">已选商品：<span v-for="item in checkGoods" :key="item.id" class="activeCha1">{{ item.goodsName }}</span></p>
+      <el-button type="primary" style="margin-bottom:20px" @click="importGoodSrue">确定分配</el-button>
       <el-table
         ref="multipleTable"
         v-loading="loading"
         :data="commList"
         tooltip-effect="dark"
-        height="500"
+        height="400"
         style="width:95%;margin:10px auto 20px auto;"
         highlight-current-row
         @selection-change="handleSelectionGoodsChange"
@@ -159,7 +160,7 @@
 </template>
 
 <script>
-import { selectGoodsByAdmin, getGoodsTypeByAdmin, addStore, getTradeList, selectStoreList, updateStoreOne } from '@/api/user'
+import { issueGoodsToStore, selectGoodsByAdmin, getGoodsTypeByAdmin, addStore, getTradeList, selectStoreList, updateStoreOne } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
 export default {
   data() {
@@ -172,6 +173,7 @@ export default {
       classFyList: [], // 行业容器
       classList: [],
       checkChannel: [], // 选中渠道商
+      checkGoods: [], // 选中商品
       userName: '',
       options: [],
       dialogVisible_yh: false,
@@ -213,6 +215,30 @@ export default {
     this.getClassList()
   },
   methods: {
+    async importGoodSrue() {
+      if (!this.checkGoods.length) {
+        this.$message({ message: '请勾选需要导入的商品', type: 'warning' })
+        return
+      }
+      const listId = []
+      this.checkGoods.forEach(element => {
+        listId.push(element.id)
+      })
+      await issueGoodsToStore({
+        goodsIds: listId,
+        storeId: this.checkChannel[0].id
+      }).then(res => {
+        if (res.status) {
+          this.$message({ message: res.statusMessage, type: 'success' })
+          this.$refs.multipleTable1.clearSelection()
+          this.$refs.multipleTable.clearSelection()
+        } else {
+          this.$refs.multipleTable1.clearSelection()
+          this.$refs.multipleTable.clearSelection()
+          this.$message({ message: res.statusMessage, type: 'warning' })
+        }
+      })
+    },
     generateRoutes(routes) {
       const res = []
       routes.forEach(route => {
@@ -292,9 +318,10 @@ export default {
         return
       }
       this.checkChannel = val
-      console.log(val)
+      // console.log(val)
     },
     handleSelectionGoodsChange(val) {
+      this.checkGoods = val
       console.log(val)
     },
     async addUser(formName) {
@@ -423,9 +450,19 @@ export default {
 <style scoped>
 .activeCha{
     padding: 5px 8px;
+    /* border:1px solid #00c48f; */
+  background-color:#00c48f !important;
+ color:#fff ;
+ border-radius: 4px;
+}
+.activeCha1{
+  display: inline-block;
+    padding: 5px 8px;
     border:1px solid #00c48f;
+    margin-left: 5px;
   /* background-color:#00c48f !important; */
  color:#00c48f ;
+
  border-radius: 4px;
 }
 .useSign{
