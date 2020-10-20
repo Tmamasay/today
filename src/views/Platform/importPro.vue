@@ -29,11 +29,6 @@
         width="50"
         label="序号"
       />
-      <!-- <el-table-column prop="createTime" width="180" label="添加时间">
-        <template slot-scope="scope">
-          {{ formatDate(scope.row.createTime) }}
-        </template>
-      </el-table-column> -->
 
       <el-table-column prop="storeName" label="渠道商名称" />
       <el-table-column prop="tradeType" label="行业" />
@@ -160,7 +155,7 @@
 </template>
 
 <script>
-import { issueGoodsToStore, selectGoodsByAdmin, getGoodsTypeByAdmin, addStore, getTradeList, selectStoreList, updateStoreOne } from '@/api/user'
+import { issueGoodsToStore, selectGoodsByAdmin, getGoodsTypeByAdmin, getTradeList, selectStoreList } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
 export default {
   data() {
@@ -290,6 +285,7 @@ export default {
         this.$message({ message: '请勾选需要导入的渠道商', type: 'warning' })
         return
       }
+      // this.$refs.multipleTable.clearSelection()
       this.dialogVisible_yh = true
     },
     getGoodsList() {
@@ -324,57 +320,6 @@ export default {
       this.checkGoods = val
       console.log(val)
     },
-    async addUser(formName) {
-      const _this = this
-      await _this.$refs[formName].validate((valid) => {
-        if (valid) {
-          if (!this.yhData.id) {
-            // this.yhData.password = ttyMD5(this.yhData.password)
-            const _param = {
-              loginName: this.yhData.account,
-              mobile: this.yhData.phone,
-              password: this.yhData.password,
-              rate: this.yhData.fee,
-              storeAddress: this.yhData.entityAdress,
-              storeLevel: this.yhData.grade,
-              storeName: this.yhData.name,
-              storeRealName: this.yhData.entityName,
-              tradeTypeId: this.yhData.industry,
-              userName: this.yhData.contacts
-            }
-            addStore(_param).then(res => {
-              if (res.status) {
-                _this.$message({ message: '操作成功', type: 'success' })
-                _this.dialogVisible_yh = false
-                _this.getlist()
-              }
-            })
-          } else {
-            const _param2 = {
-              storeId: this.yhData.id,
-              loginName: this.yhData.account,
-              mobile: this.yhData.phone,
-              password: this.yhData.password,
-              rate: this.yhData.fee,
-              storeAddress: this.yhData.entityAdress,
-              storeLevel: this.yhData.grade,
-              storeName: this.yhData.name,
-              storeRealName: this.yhData.entityName,
-              tradeTypeId: this.yhData.industry,
-              userName: this.yhData.contacts
-            }
-            updateStoreOne(_param2).then(res => {
-              if (res.status) {
-                _this.$message({ message: '操作成功', type: 'success' })
-                _this.dialogVisible_yh = false
-                _this.getlist()
-              }
-            })
-          }
-        }
-      })
-    },
-
     async getTradeList() {
       await getTradeList().then(res => {
         if (res.status) {
@@ -413,26 +358,6 @@ export default {
     searchGoods() {
       this.Current = 1
       this.getGoodsList()
-    },
-    // 时间戳转换
-    formatDate(value) {
-      const date = new Date(value)
-      const y = date.getFullYear()
-      let MM = date.getMonth() + 1
-      MM = MM < 10 ? ('0' + MM) : MM
-      let d = date.getDate()
-      d = d < 10 ? ('0' + d) : d
-      let h = date.getHours()
-      h = h < 10 ? ('0' + h) : h
-      let m = date.getMinutes()
-      m = m < 10 ? ('0' + m) : m
-      let s = date.getSeconds()
-      s = s < 10 ? ('0' + s) : s
-      return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
-    },
-    toNum(value) {
-      if (!value) return 0
-      return value.toFixed(2)
     },
     // 分页
     handleSizeChange(val) {

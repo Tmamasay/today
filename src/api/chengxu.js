@@ -4,7 +4,7 @@ import request from '@/utils/request'
 // 上传
 export function fileUpload(data) {
   return request({
-    url: '/tpp-admin/file/fileUpload',
+    url: '/file/fileUpload',
     method: 'post',
     data
   })
