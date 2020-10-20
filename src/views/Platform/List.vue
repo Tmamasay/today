@@ -91,8 +91,15 @@
         >
           <el-table-column prop="keyName" label="属性名" />
           <el-table-column prop="valueName" label="属性值" />
+          <el-table-column prop="price" label="价格" />
+          <el-table-column prop="discountPrice" label="优惠价" />
+          <el-table-column prop="skuImg" label="缩略图">
+            <template slot-scope="scope">
+              <img :src="scope.row.skuImg" alt="" width="80px" height="80px" srcset="">
+            </template>
+          </el-table-column>
 
-          <el-table-column prop="price" label="价格" width="150">
+          <!-- <el-table-column prop="price" label="价格" width="150">
             <template slot-scope="scope">
               <el-form :ref="`${scope.row.id}`" :model="scope.row" :rules="rules">
                 <el-form-item prop="price">
@@ -136,7 +143,7 @@
               </div>
 
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column prop="status" label="状态">
             <template slot-scope="scope">
               <span v-if="scope.row.status==='USE'" class="useSign">上架中</span>
@@ -149,10 +156,47 @@
           >
             <template slot-scope="scope">
               <el-button v-if="scope.row.status==='USE'" size="small" @click="downGoodsSKUAdmin(scope.row)">下架</el-button>
-              <el-button v-if="scope.row.status==='STOP'" size="small" @click="goSkuUp(scope.row)">上架</el-button>
+              <el-button v-if="scope.row.status==='STOP'" size="small" @click="goSkuUpDIGO(scope.row)">上架</el-button>
             </template>
           </el-table-column>
         </el-table>
+      </div>
+    </el-dialog>
+    <!--编辑sku值-->
+    <el-dialog
+      title="上架"
+      :visible.sync="dialogSKUVisible"
+      :close-on-click-modal="false"
+      width="40%"
+    >
+      <el-form v-if="dialogSKUVisible" ref="skuForm" label-width="100px" :model="skuForm" :rules="rulesSKU">
+        <el-form-item label="缩略图">
+          <el-upload
+            ref="upload"
+            list-type="picture-card"
+            action
+            :file-list="fileList"
+            :show-file-list="true"
+            :http-request="uploadFile"
+            accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
+            :limit="1"
+            :on-remove="handleRemove"
+            :on-change="handlePreview"
+            :on-exceed="handleExceed"
+          >
+            <i class="el-icon-plus" />
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="价格" prop="price">
+          <el-input v-model="skuForm.price" placeholder="请输入价格" style="width:65%" />
+        </el-form-item>
+        <el-form-item label="优惠价" prop="discountPrice">
+          <el-input v-model="skuForm.discountPrice" style="width:65%" placeholder="请输入优惠价" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogSKUVisible=false">取 消</el-button>
+        <el-button type="primary" @click="goSkuUp('skuForm')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -180,6 +224,22 @@ export default {
       }
     }
     return {
+      skuGoodsId: '',
+      dialogSKUVisible: false,
+      skuForm: {
+        price: '',
+        discountPrice: '',
+        skuImg: ''
+      },
+      rulesSKU: {
+        price: [
+          { required: true, validator: validatePrice, trigger: 'blur' }
+        ],
+        discountPrice: [
+          { required: true, validator: validateDiscount, trigger: 'blur' }
+        ]
+      },
+      // --------
       dialogVisibleImg: false,
       dialogImageUrl: null,
       uploadImg: null,
@@ -233,27 +293,10 @@ export default {
     handleRemove(file) {
       console.log(file)
     },
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url
-      this.dialogVisibleImg = true
-    },
-    uploadFileFM(e) {
-      fileUpload(this.uploadData).then(res => {
-        if (res) {
-          this.addCommodForm.imgOne = res.data
-          this.$message({
-            message: '上传成功',
-            type: 'success'
-          })
-        } else {
-          this.$message.error(res.status)
-        }
-      })
-    },
     uploadFile(e) {
       fileUpload(this.uploadData).then(res => {
         if (res) {
-          this.uploadImg = res.data
+          this.skuForm.skuImg = res.data
           this.$message({
             message: '上传成功',
             type: 'success'
@@ -290,33 +333,37 @@ export default {
     goEdit(row) {
       this.$router.push({ path: '/platform', query: { goodsId: row.id }})
     },
-    goSkuUp(row) {
-      if (!row.discountPrice) {
-        this.$message({
-          message: '请填写价格',
-          type: 'warning'
-        })
-        return
+    goSkuUpDIGO(row) {
+      this.dialogSKUVisible = true
+      this.fileList = []
+      this.skuGoodsId = row
+      this.skuForm = {
+        price: row.price,
+        discountPrice: row.discountPrice,
+        skuImg: row.discountPrice
       }
-      if (!row.price) {
-        this.$message({
-          message: '请填写优惠价格',
-          type: 'warning'
+      if (row.skuImg) {
+        this.fileList.push({
+          url: row.skuImg
         })
-        return
       }
+    },
+    goSkuUp(formName) {
       const _this = this
-      this.$refs[row.id].validate((valid) => {
+      this.$refs[formName].validate((valid) => {
         if (valid) {
           upGoodsSKUAdmin({
-            discountPrice: +row.discountPrice,
-            id: row.id,
-            price: +row.price,
-            skuImg: this.uploadImg
+            discountPrice: +this.skuForm.discountPrice,
+            id: this.skuGoodsId.id,
+            price: +this.skuForm.price,
+            skuImg: this.skuForm.skuImg
           }).then(res => {
             if (res.status) {
               _this.$message({ message: '操作成功', type: 'success' })
-              _this.getSKUList(row.goodsId)
+              _this.$refs.upload.clearFiles()
+              _this.dialogSKUVisible = false
+
+              _this.getSKUList(this.skuGoodsId.goodsId)
             }
           })
         }

@@ -2,7 +2,7 @@
   <div class="hw_admin_box shaowAll">
     <el-button type="primary" style="margin-bottom:20px" @click="addClassFy">新增行业</el-button>
     <el-row>
-      <el-col :span="20">
+      <el-col v-if="datalist.length" :span="20">
         <el-table
           v-loading="loading"
           :data="datalist"
@@ -125,6 +125,7 @@ export default {
       }
     }
     return {
+      datalist: [],
       addClassfy: {
         className: ''
       },
