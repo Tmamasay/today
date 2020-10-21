@@ -164,7 +164,7 @@
     </el-dialog>
     <!--编辑sku值-->
     <el-dialog
-      title="上架"
+      :title="showSkuTitle"
       :visible.sync="dialogSKUVisible"
       :close-on-click-modal="false"
       width="40%"
@@ -226,6 +226,7 @@ export default {
     return {
       skuGoodsId: '',
       dialogSKUVisible: false,
+      showSkuTitle: '',
       skuForm: {
         price: '',
         discountPrice: '',
@@ -337,10 +338,11 @@ export default {
       this.dialogSKUVisible = true
       this.fileList = []
       this.skuGoodsId = row
+      this.showSkuTitle = `上架—(${row.keyName}-${row.valueName})`
       this.skuForm = {
         price: row.price,
         discountPrice: row.discountPrice,
-        skuImg: row.discountPrice
+        skuImg: row.skuImg
       }
       if (row.skuImg) {
         this.fileList.push({
@@ -364,6 +366,7 @@ export default {
               _this.dialogSKUVisible = false
 
               _this.getSKUList(this.skuGoodsId.goodsId)
+              _this.getlist()
             }
           })
         }

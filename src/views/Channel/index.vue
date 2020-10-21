@@ -80,12 +80,18 @@
         <el-form-item label="渠道商名称" prop="name">
           <el-input v-model="yhData.name" placeholder="请输入渠道商名称" />
         </el-form-item>
-        <el-form-item label="渠道商账号" prop="account">
+        <el-form-item v-if="!yhData.id" label="渠道商账号" prop="account">
           <el-input v-model="yhData.account" placeholder="请输入渠道商账号" />
         </el-form-item>
         <el-form-item label="行业类别" prop="industry">
           <el-select v-model="yhData.industry" placeholder="请选择" style="width:90%">
             <el-option v-for="item in options" :key="item.id" :label="item.tradeName" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="菜单等级" style="margin-left:-15px">
+          <el-select v-model="yhData.menuLevel" placeholder="请选择" style="width:90%">
+            <el-option label="一级" value="0" />
+            <el-option label="二级" value="1" />
           </el-select>
         </el-form-item>
         <el-form-item label="渠道商等级" prop="grade" style="margin-left:-15px">
@@ -199,6 +205,7 @@ export default {
       options: [],
       dialogVisible_yh: false,
       yhData: {
+        menuLevel: '1', // 渠道商菜单等级
         name: '', // 渠道商名称
         account: '', // 账号
         industry: '', // 行业
@@ -289,43 +296,49 @@ export default {
           if (!this.yhData.id) {
             // this.yhData.password = ttyMD5(this.yhData.password)
             const _param = {
-              loginName: this.yhData.account,
+              userName: this.yhData.account,
               mobile: this.yhData.phone,
               password: this.yhData.password,
               rate: this.yhData.fee,
               storeAddress: this.yhData.entityAdress,
+              menuLevel: this.yhData.menuLevel,
               storeLevel: this.yhData.grade,
               storeName: this.yhData.name,
               storeRealName: this.yhData.entityName,
               tradeTypeId: this.yhData.industry,
-              userName: this.yhData.contacts
+              customerName: this.yhData.contacts
             }
             addStore(_param).then(res => {
               if (res.status) {
                 _this.$message({ message: '操作成功', type: 'success' })
                 _this.dialogVisible_yh = false
-                _this.getlist()
+                setTimeout(() => {
+                  _this.getlist()
+                }, 500)
               }
             })
           } else {
             const _param2 = {
               storeId: this.yhData.id,
-              loginName: this.yhData.account,
+              userName: this.yhData.account,
               mobile: this.yhData.phone,
-              password: this.yhData.password,
+              // password: this.yhData.password,
               rate: this.yhData.fee,
               storeAddress: this.yhData.entityAdress,
+              menuLevel: this.yhData.menuLevel,
               storeLevel: this.yhData.grade,
               storeName: this.yhData.name,
               storeRealName: this.yhData.entityName,
               tradeTypeId: this.yhData.industry,
-              userName: this.yhData.contacts
+              customerName: this.yhData.contacts
             }
             updateStoreOne(_param2).then(res => {
               if (res.status) {
                 _this.$message({ message: '操作成功', type: 'success' })
                 _this.dialogVisible_yh = false
-                _this.getlist()
+                setTimeout(() => {
+                  _this.getlist()
+                }, 500)
               }
             })
           }
@@ -343,16 +356,17 @@ export default {
           console.log('-----------')
           this.yhData = {
             id: row.id,
-            account: res.data.user.userName,
+            account: res.data.store.userName,
             phone: res.data.store.mobile,
-            password: res.data.user.password,
+            // password: res.data.user.password,
             fee: res.data.store.rate,
             entityAdress: res.data.store.storeAddress,
+            menuLevel: `${res.data.switch.menuLevel}`,
             grade: res.data.store.storeLevel,
             name: res.data.store.storeName,
             entityName: res.data.store.storeRealName,
-            industry: res.data.store.tradeTypeId,
-            contacts: res.data.store.userName
+            industry: `${res.data.store.tradeTypeId}`,
+            contacts: res.data.store.customerName
           }
         }
       })
@@ -370,6 +384,7 @@ export default {
         account: '', // 账号
         industry: '', // 行业
         grade: '', // 等级
+        menuLevel: '', // 菜单等级
         entityName: '', // 实体店名字
         entityAdress: '', // 实体店地址
         contacts: '', // 联系人
