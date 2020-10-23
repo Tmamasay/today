@@ -78,10 +78,34 @@
       :close-on-click-modal="false"
       width="80%"
     >
-      <div v-if="dialogVisible">
+      <div v-if="dialogVisible" style=" height: 500px;overflow-y: auto;">
         <!-- <span style="font-weight: 600;">商品名称：{{ SkuList.goods.goodsName }}</span>
         <span style="font-weight: 600;padding-left:15px">封面价格：{{ SkuList.goods.showPrice }}</span> -->
-        <el-table
+        <table className="spec-table" class="source">
+          <thead>
+            <tr class="ceTR">
+              <th v-for="item in attributeName" :key="item" class="cell">{{ item }}</th>
+              <th class="cell">价格</th>
+              <th class="cell">优惠价</th>
+              <th class="cell">缩略图</th>
+              <th class="cell">状态</th>
+              <th class="cell">操作</th>
+            </tr>
+            <tr v-for="item1 in SkuList.skuList" :key="item1">
+              <td v-for="item2 in item1.specsList" :key="item2" class="cell">{{ item2.valueName }}</td>
+              <td class="cell">{{ item1.price }}</td>
+              <td class="cell">{{ item1.discountPrice }}</td>
+              <td class="cell"><img :src="item1.skuImg" alt="" width="80px" height="80px" srcset=""></td>
+              <td class="cell"><span v-if="item1.status==='USE'" class="useSign">上架中</span>
+                <span v-else-if="item1.status==='STOP' " class="noUseSign" type="danger">已下架</span></td>
+
+              <td class="cell"><el-button v-if="item1.status==='USE'" size="small" @click="downGoodsSKUAdmin(item1)">下架</el-button>
+                <el-button v-if="item1.status==='STOP'" size="small" @click="goSkuUpDIGO(item1)">上架</el-button></td>
+            </tr>
+
+          </thead>
+        </table>
+        <!-- <el-table
           v-loading="loading"
           :data="SkuList.skuList"
           tooltip-effect="dark"
@@ -98,52 +122,6 @@
               <img :src="scope.row.skuImg" alt="" width="80px" height="80px" srcset="">
             </template>
           </el-table-column>
-
-          <!-- <el-table-column prop="price" label="价格" width="150">
-            <template slot-scope="scope">
-              <el-form :ref="`${scope.row.id}`" :model="scope.row" :rules="rules">
-                <el-form-item prop="price">
-                  <el-input v-model="scope.row.price" placeholder="请输入价格" />
-                </el-form-item>
-              </el-form>
-            </template>
-          </el-table-column>
-          <el-table-column prop="discountPrice" width="150" label="优惠价">
-            <template slot-scope="scope">
-              <el-form :ref="`${scope.row.id}`" :model="scope.row" :rules="rules">
-                <el-form-item prop="discountPrice">
-                  <el-input v-model="scope.row.discountPrice" placeholder="请输入优惠价格" />
-                </el-form-item>
-              </el-form>
-            </template>
-          </el-table-column>
-
-          <el-table-column width="350" prop="skuImg" label="封面图">
-            <template slot-scope="scope">
-
-              <div v-if="scope.row.id">
-                <el-upload
-                  list-type="picture-card"
-                  action
-                  :file-list="showFlie(scope.row)"
-                  :show-file-list="true"
-                  :http-request="uploadFile"
-                  accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
-                  :limit="1"
-                  :on-remove="handleRemove"
-                  :on-change="handlePreview"
-                  :on-preview="handlePictureCardPreview"
-                  :on-exceed="handleExceed"
-                >
-                  <i class="el-icon-plus" />
-                </el-upload>
-                <el-dialog :visible.sync="dialogVisibleImg">
-                  <img width="100%" :src="dialogImageUrl" alt="">
-                </el-dialog>
-              </div>
-
-            </template>
-          </el-table-column> -->
           <el-table-column prop="status" label="状态">
             <template slot-scope="scope">
               <span v-if="scope.row.status==='USE'" class="useSign">上架中</span>
@@ -159,7 +137,7 @@
               <el-button v-if="scope.row.status==='STOP'" size="small" @click="goSkuUpDIGO(scope.row)">上架</el-button>
             </template>
           </el-table-column>
-        </el-table>
+        </el-table> -->
       </div>
     </el-dialog>
     <!--编辑sku值-->
@@ -224,6 +202,7 @@ export default {
       }
     }
     return {
+      attributeName: [],
       skuGoodsId: '',
       dialogSKUVisible: false,
       showSkuTitle: '',
@@ -406,8 +385,14 @@ export default {
           }, 300)
 
           _this.SkuList = res.data
+          const _NewAU = []
           _this.skuTitle = `SKU操作—${res.data.goods.goodsName}`
-          console.log(_this.SkuList)
+
+          _this.SkuList.skuList[0].specsList.forEach(el => {
+            _NewAU.push(el.keyName)
+          })
+          console.log(_NewAU)
+          _this.attributeName = _NewAU
           // _this.total = res.data.total
         }
       })
@@ -462,6 +447,26 @@ export default {
 </script>
 
 <style scoped>
+.source{
+  padding: 24px;
+  border: 1px solid #ebebeb;
+    border-radius: 3px;
+    transition: .2s;
+
+}
+.cell{
+  height: 90px;
+ border-bottom: 1px solid #ebeef5;
+      display: inline-block;
+    box-sizing: border-box;
+    position: relative;
+    vertical-align: middle;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: 120px;
+    text-align: center;
+    line-height: 90px;
+}
 .useSign{
 
   padding: 5px 8px;

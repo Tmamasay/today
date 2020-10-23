@@ -277,6 +277,32 @@ export default {
     this.getlist()
   },
   methods: {
+    arrp(arr) {
+    // 编辑原数组格式
+      if (arr[0].value) {
+        arr = arr.map((item) => {
+          item = item.value
+          return item
+        })
+      }
+      if (arr.length === 1) {
+        // 最终合并成一个
+        return arr[0]
+      } else {	// 有两个子数组就合并
+        const arrySon = []
+        // 将组合放到新数组中
+        arr[0].forEach((_, index) => {
+          arr[1].forEach((_, index1) => {
+            arrySon.push([].concat(arr[0][index], arr[1][index1]))
+          })
+        })
+        // 新数组并入原数组,去除合并的前两个数组
+        arr[0] = arrySon
+        arr.splice(1, 1)
+        // 递归
+        return this.arrp(arr)
+      }
+    },
     removeZX(row) {
       disableStoreOne({
         storeId: row.id,

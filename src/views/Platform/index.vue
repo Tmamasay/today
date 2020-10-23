@@ -281,6 +281,37 @@ export default {
     this.getClassList()
   },
   methods: {
+    arrp(arr) {
+    // 编辑原数组格式
+      if (arr[0].attributeValue) {
+        arr = arr.map((item) => {
+          item = item.attributeValue
+          return item
+        })
+      }
+      if (arr.length === 1) {
+        // 最终合并成一个
+        return arr[0]
+      } else {	// 有两个子数组就合并
+        const arrySon = []
+        // 将组合放到新数组中
+        arr[0].forEach((_, index) => {
+          arr[1].forEach((_, index1) => {
+            console.log(arr[0][index])
+            console.log(arr[1][index1])
+            console.log(arr[0])
+            console.log(arr[1])
+            console.log('------------00000000000000')
+            arrySon.push([].concat(arr[0][index], arr[1][index1]))
+          })
+        })
+        // 新数组并入原数组,去除合并的前两个数组
+        arr[0] = arrySon
+        arr.splice(1, 1)
+        // 递归
+        return this.arrp(arr)
+      }
+    },
     generateRoutes(routes) {
       const res = []
       routes.forEach(route => {
@@ -442,6 +473,7 @@ export default {
           this.SpecnamicTags[index].attributeValue.push(inputValue)
           console.log(this.SpecnamicTags)
         }
+        // this.addCommodForm.attributes = this.arrp(this.SpecnamicTags)
         this.addCommodForm.attributes = this.SpecnamicTags
         console.log(this.addCommodForm.attributes)
         console.log('-0-----------')
@@ -560,7 +592,7 @@ export default {
           this.fileList.push({
             url: res.data.goods.imgOne
           })
-          res.data.keyValus.forEach(element => {
+          res.data.skus.forEach(element => {
             this.GuienamicTags.push(element.keyName)
             const _Floy = {
               attributeKey: '',
@@ -568,7 +600,7 @@ export default {
             }
             element.values.forEach(el => {
               _Floy.attributeKey = element.keyName
-              _Floy.attributeValue.push(el.valueName)
+              _Floy.attributeValue.push(el)
             })
             this.SpecnamicTags.push(_Floy)
             this.addCommodForm.attributes = this.SpecnamicTags
@@ -590,7 +622,8 @@ export default {
         if (valid) {
           const data = {
             id: this.addCommodForm.id || null,
-            attributes: this.addCommodForm.attributes,
+            attributes: this.arrp(this.addCommodForm.attributes),
+            attributeName: this.GuienamicTags,
             goodsDetails: this.addCommodForm.goodsDetails,
             goodsName: this.addCommodForm.goodsName,
             goodsTypeId: typeof (this.addCommodForm.goodsTypeId) === 'string' ? this.addCommodForm.goodsTypeId : this.addCommodForm.goodsTypeId[this.addCommodForm.goodsTypeId.length - 1],
