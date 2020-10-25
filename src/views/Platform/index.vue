@@ -297,11 +297,6 @@ export default {
         // 将组合放到新数组中
         arr[0].forEach((_, index) => {
           arr[1].forEach((_, index1) => {
-            console.log(arr[0][index])
-            console.log(arr[1][index1])
-            console.log(arr[0])
-            console.log(arr[1])
-            console.log('------------00000000000000')
             arrySon.push([].concat(arr[0][index], arr[1][index1]))
           })
         })
