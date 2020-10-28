@@ -181,8 +181,10 @@ export default {
             _this.loading = false
           }, 300)
           _this.datalist = res.data
-          this.checkOneTab = this.datalist[0].id
-          this.getlist()
+          if (_this.datalist.length) {
+            this.checkOneTab = this.datalist[0].id
+            this.getlist()
+          }
         }
       })
     },
@@ -280,6 +282,7 @@ export default {
     },
     addFy(data) {
       console.log(data)
+      this.addObj.rootId = null
       if (data) {
         this.addObj.rootId = data.id
       }
