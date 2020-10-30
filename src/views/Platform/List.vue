@@ -91,8 +91,8 @@
               <th class="cell">状态</th>
               <th class="cell">操作</th>
             </tr>
-            <tr v-for="item1 in SkuList.skuList" :key="item1">
-              <td v-for="item2 in item1.specsList" :key="item2" class="cell">{{ item2.valueName }}</td>
+            <tr v-for="(item1,index) in SkuList.skuList" :key="index">
+              <td v-for="(item2,index2) in item1.specsList" :key="index2" class="cell">{{ item2.valueName }}</td>
               <td class="cell">{{ item1.price }}</td>
               <td class="cell">{{ item1.discountPrice }}</td>
               <td class="cell"><img :src="item1.skuImg" alt="" width="80px" height="80px" srcset=""></td>

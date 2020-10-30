@@ -446,7 +446,7 @@ export default {
         // console.log(this.$refs.saveSpecInput[index])
         // console.log('[[[======')
         // console.log(index)
-        this.$refs.saveSpecInput[index].$refs.input.focus()
+        // this.$refs.saveSpecInput[index].$refs.input.focus()
       })
     },
 
