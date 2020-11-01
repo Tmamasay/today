@@ -211,6 +211,8 @@ export default {
   },
   methods: {
     async importGoodSrue() {
+      console.log(this.checkChannel)
+      console.log('================ppp')
       if (!this.checkGoods.length) {
         this.$message({ message: '请勾选需要导入的商品', type: 'warning' })
         return
@@ -225,10 +227,10 @@ export default {
       }).then(res => {
         if (res.status) {
           this.$message({ message: res.statusMessage, type: 'success' })
-          this.$refs.multipleTable1.clearSelection()
+          // this.$refs.multipleTable1.clearSelection()
           this.$refs.multipleTable.clearSelection()
         } else {
-          this.$refs.multipleTable1.clearSelection()
+          // this.$refs.multipleTable1.clearSelection()
           this.$refs.multipleTable.clearSelection()
           this.$message({ message: res.statusMessage, type: 'warning' })
         }
