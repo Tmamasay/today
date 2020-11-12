@@ -206,3 +206,38 @@ export function issueGoodsToStore(data) {
     data
   })
 }
+//系统轮播图分页
+export function selectChartPage(data) {
+  return request({
+    url: '/admin/chartManager/selectChartPage',
+    method: 'post',
+    data
+  })
+}
+
+//新增系统轮播图
+export function addChart(data) {
+  return request({
+    url: '/admin/chartManager/addChart',
+    method: 'post',
+    data
+  })
+}
+
+//修改系统轮播图
+export function updateChart(data) {
+  return request({
+    url: '/admin/chartManager/updateChart',
+    method: 'post',
+    data
+  })
+}
+
+//删除系统轮播图
+export function delChart(data) {
+  return request({
+    url: '/admin/chartManager/delChart',
+    method: 'post',
+    data
+  })
+}

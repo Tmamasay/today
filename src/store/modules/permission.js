@@ -56,6 +56,7 @@ export const componentsMap = {
   // main: () => import('@/views/userManager/order'), // 订单列表
   // webStatistics: () => import('@/views/dashboard/busIndex') // 首页
   main: () => import('@/views/Channel/index'), // 首页
+  chartManager: () => import('@/views/Channel/chartList'), // 轮播图管理
   globalGoodsWarehouse: () => import('@/views/Platform/List'),
   import: () => import('@/views/Platform/importPro')
 
