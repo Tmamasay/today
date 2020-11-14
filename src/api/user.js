@@ -206,7 +206,7 @@ export function issueGoodsToStore(data) {
     data
   })
 }
-//系统轮播图分页
+// 系统轮播图分页
 export function selectChartPage(data) {
   return request({
     url: '/admin/chartManager/selectChartPage',
@@ -215,7 +215,7 @@ export function selectChartPage(data) {
   })
 }
 
-//新增系统轮播图
+// 新增系统轮播图
 export function addChart(data) {
   return request({
     url: '/admin/chartManager/addChart',
@@ -224,7 +224,7 @@ export function addChart(data) {
   })
 }
 
-//修改系统轮播图
+// 修改系统轮播图
 export function updateChart(data) {
   return request({
     url: '/admin/chartManager/updateChart',
@@ -233,10 +233,43 @@ export function updateChart(data) {
   })
 }
 
-//删除系统轮播图
+// 删除系统轮播图
 export function delChart(data) {
   return request({
     url: '/admin/chartManager/delChart',
+    method: 'post',
+    data
+  })
+}
+
+// 查询渠道商的轮播图
+export function getStoreChart(data) {
+  return request({
+    url: '/admin/storeManager/getStoreChart',
+    method: 'post',
+    data
+  })
+}
+// 查询渠道商没有设置的轮播图
+export function selectNoChartByStoreId(data) {
+  return request({
+    url: '/admin/storeManager/selectNoChartByStoreId',
+    method: 'post',
+    data
+  })
+}
+// 删除渠道商的轮播图
+export function delStoreChart(data) {
+  return request({
+    url: '/admin/storeManager/delStoreChart',
+    method: 'post',
+    data
+  })
+}
+// 设置渠道商的轮播图
+export function setStoreChart(data) {
+  return request({
+    url: '/admin/storeManager/setStoreChart',
     method: 'post',
     data
   })

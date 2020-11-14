@@ -49,10 +49,12 @@
       <el-table-column prop="createTime" width="150" label="创建时间" />
       <el-table-column
         label="编辑"
+        width="230"
       >
         <template slot-scope="scope">
           <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">编辑</span>
-          <!-- <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">充值</span> -->
+          <span style="color:#00c48f;cursor: pointer;" @click="goHasLunbo(scope.row)">已有轮播</span>
+          <span style="color:#00c48f;cursor: pointer;" @click="goNoLunbo(scope.row)">关联轮播</span>
           <span v-if="scope.row.status==='USE'" style="color:red;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">冻结</span>
           <span v-if="scope.row.status==='STOP'" style="color:#00c48f;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">解冻</span>
         </template>
@@ -127,11 +129,96 @@
         <el-button type="primary" @click="addUser('yhData')">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 关联轮播图 -->
+    <el-dialog
+      title="已关联轮播图"
+      :visible.sync="dialogVisible_lb"
+      :close-on-click-modal="false"
+      width="40%"
+    >
+      <div>
+        <el-table
+          v-loading="loading"
+          :data="tableData"
+          highlight-current-row
+          style="height:600px;overflow: auto;"
+          size="mini"
+        >
+          <el-table-column prop="imgName" label="轮播名称" />
+          <el-table-column prop="img" label="图片">
+            <template slot-scope="scope">
+              <div slot="reference" class="name-wrapper">
+                <img
+                  :src="scope.row.img"
+                  alt="无图片"
+                  style="height: 50px; width: 50px;display: block;cursor: pointer;"
+                >
+
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="sort" label="排序" align="center">
+            <template slot-scope="scope">
+              {{ scope.row.orderNum }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="编辑时间" align="center" />
+          <el-table-column prop="operation" label="操作" align="center">
+            <template slot-scope="scope">
+              <el-button type="text" size="mini" @click="remove(scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-dialog>
+
+    <!-- 未关联轮播图 -->
+    <el-dialog
+      title="未关联轮播图"
+      :visible.sync="dialogVisible_nolb"
+      :close-on-click-modal="false"
+      width="40%"
+    >
+      <div>
+        <el-table
+          v-loading="loading"
+          :data="tableNoData"
+          highlight-current-row
+          style="height:600px;overflow: auto;"
+          size="mini"
+        >
+          <el-table-column prop="imgName" label="轮播名称" />
+          <el-table-column prop="img" label="图片">
+            <template slot-scope="scope">
+              <div slot="reference" class="name-wrapper">
+                <img
+                  :src="scope.row.img"
+                  alt="无图片"
+                  style="height: 50px; width: 50px;display: block;cursor: pointer;"
+                >
+
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="sort" label="排序" align="center">
+            <template slot-scope="scope">
+              {{ scope.row.orderNum }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="编辑时间" align="center" />
+          <el-table-column prop="operation" label="操作" align="center">
+            <template slot-scope="scope">
+              <el-button type="text" size="mini" @click="relaTion(scope.row)">关联轮播</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne, getStoreOne, updateStoreOne } from '@/api/user'
+import { delStoreChart, getStoreChart, selectNoChartByStoreId, setStoreChart, addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne, getStoreOne, updateStoreOne } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
 export default {
   data() {
@@ -201,6 +288,13 @@ export default {
       }
     }
     return {
+      // 关于轮播
+      dialogVisible_lb: false,
+      dialogVisible_nolb: false,
+      tableData: [],
+      tableNoData: [],
+      putStoreId: '',
+      // ====
       userName: '',
       options: [],
       dialogVisible_yh: false,
@@ -268,6 +362,9 @@ export default {
       Size: 10, // 一页多少条
       Current: 1, // 页码
       total: 0, // 总数
+      sizeL: 10, // 一页多少条
+      currentL: 1, // 页码
+      totalL: 0, // 总数
       time: null,
       type: null,
       loading: false // loading加载
@@ -277,6 +374,101 @@ export default {
     this.getlist()
   },
   methods: {
+    /*
+    *功能描述：删除分类
+    *开发人员：LRS
+    */
+    remove(e) {
+      var data = {
+        chartId: e.id,
+        storeId: this.putStoreId
+      }
+      this.$confirm('此操作将删除该轮播, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        delStoreChart(data).then(res => {
+          if (res.status) {
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            })
+            this.getHasLbList(this.putStoreId)
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
+    relaTion(row) {
+      const arr = []
+      arr.push(row.id)
+      setStoreChart({
+        chartIds: arr,
+        storeId: this.putStoreId
+
+      }).then(res => {
+        if (res.status) {
+          this.$message({ message: '操作成功', type: 'success' })
+          this.getNoLbList(this.putStoreId)
+        }
+      })
+    },
+
+    goNoLunbo(row) {
+      this.dialogVisible_nolb = true
+      this.putStoreId = row.id
+      this.getNoLbList(row.id)
+    },
+    /*
+    *功能描述：获取为关联的轮播图列表
+    *开发人员：CX
+    */
+    getNoLbList(id) {
+      const _this = this
+      _this.loading = true
+      selectNoChartByStoreId({
+        current: _this.currentL,
+        size: _this.sizeL,
+        storeId: id,
+        imgName: ''
+      }).then(res => {
+        if (res.status) {
+          _this.tableNoData = res.data.records
+          _this.totalL = res.data.total
+          setTimeout(() => {
+            _this.loading = false
+          }, 300)
+        }
+      })
+    },
+    goHasLunbo(row) {
+      this.dialogVisible_lb = true
+      this.putStoreId = row.id
+      this.getHasLbList(row.id)
+    },
+    /*
+    *功能描述：获取列表
+    *开发人员：CX
+    */
+    getHasLbList(id) {
+      const _this = this
+      _this.loading = true
+      getStoreChart({
+        storeId: id
+      }).then(res => {
+        if (res.status) {
+          _this.tableData = res.data
+          setTimeout(() => {
+            _this.loading = false
+          }, 300)
+        }
+      })
+    },
     arrp(arr) {
     // 编辑原数组格式
       if (arr[0].value) {

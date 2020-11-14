@@ -4,10 +4,10 @@
     <div class="fenlei_admin">
       <div class="top_form">
         <el-form :inline="true" size="mini">
-          <el-form-item label="分类名称：">
-            <el-input v-model="searchData.name_value" placeholder="请输入分类名称" />
+          <el-form-item label="轮播名称：">
+            <el-input v-model="searchData.name_value" placeholder="请输入轮播名称" />
           </el-form-item>
-          <el-form-item label="编辑时间：">
+          <!-- <el-form-item label="编辑时间：">
             <el-date-picker
               v-model="searchData.date_value"
               type="daterange"
@@ -18,7 +18,7 @@
               start-placeholder="开始日期"
               end-placeholder="结束日期"
             />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item>
             <el-button type="primary" size="mini" icon="el-icon-search" @click="search">搜索</el-button>
             <el-button type="primary" size="mini" icon="el-icon-plus" @click="addFenleipop">添加轮播</el-button>
@@ -30,11 +30,12 @@
           v-loading="loading"
           :data="tableData"
           highlight-current-row
-          style="height:600px;overflow: auto;" 
+          style="height:600px;overflow: auto;"
           size="mini"
         >
-          <el-table-column prop="name" label="分类名称" />
-          <el-table-column prop="img" label="LOGO">
+          <el-table-column prop="imgName" label="轮播名称" />
+          <el-table-column prop="imgColour" label="轮播颜色" />
+          <el-table-column prop="img" label="图片">
             <template slot-scope="scope">
               <div slot="reference" class="name-wrapper">
                 <img
@@ -58,8 +59,6 @@
             <template slot-scope="scope">
               <el-button type="text" size="mini" @click="edit(scope.row)">编辑</el-button>
               <el-button type="text" size="mini" @click="remove(scope.row)">删除</el-button>
-              <el-button v-if="scope.row.children" type="text" size="mini" @click="twofenlei(scope.row)">添加二级分类</el-button>
-              <el-button v-if="scope.row.parentId" type="text" size="mini" @click="relationCourse(scope.row)">关联商品</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -82,7 +81,6 @@
           :visible.sync="addFenleivisible"
           :close-on-click-modal="false"
           style="width:60%;margin:0 auto"
-          @closed="closeDialog"
         >
           <el-form v-if="addFenleivisible" ref="addEditData" :rules="addEditrules" :model="addEditData" label-width="100px" size="mini">
             <el-row :gutter="10">
@@ -105,10 +103,13 @@
                 </el-upload>
               </el-form-item>
             </el-row>
-            <el-form-item  label="轮播名称：" style="line-height:60px" prop="imgName">
+            <el-form-item label="轮播名称：" style="line-height:60px" prop="imgName">
               <el-input v-model="addEditData.imgName" placeholder="请填写介绍（轮播图解释）" style="width:100%;" />
             </el-form-item>
-           <el-form-item  label="跳转url：" style="line-height:60px" prop="imgUrl">
+            <el-form-item label="轮播颜色：" style="line-height:60px" prop="imgColour">
+              <el-input v-model="addEditData.imgColour" placeholder="请填写过度颜色" style="width:100%;" />
+            </el-form-item>
+            <el-form-item label="跳转url：" style="line-height:60px" prop="imgUrl">
               <el-input v-model="addEditData.imgUrl" placeholder="请填写跳转url" style="width:100%;" />
             </el-form-item>
             <el-form-item label="排序：" prop="orderNum">
@@ -126,7 +127,7 @@
 </template>
 
 <script>
-import { selectChartPage,addChart ,updateChart,delChart} from '@/api/user'
+import { selectChartPage, addChart, updateChart, delChart } from '@/api/user'
 import { fileUpload } from '@/api/chengxu'
 export default {
   data() {
@@ -154,10 +155,11 @@ export default {
       addFenleivisible: false, // 新增分类、编辑弹出框
       title: '', // 新增分类、编辑名字
       addEditData: {// 新增、编辑字段
-        img:'',//轮播图
-        imgName:'',//介绍
-        imgUrl:'',	//url
-        orderNum:''//排序
+        img: '', // 轮播图
+        imgName: '', // 介绍
+        imgUrl: '',	// url
+        imgColour: '',	// 轮播颜色
+        orderNum: ''// 排序
       },
       addEditrules: {
         img: [
@@ -166,7 +168,10 @@ export default {
         imgName: [
           { required: true, message: '请填写轮播名称', trigger: 'blur' }
         ],
-         imgUrl: [
+        imgColour: [
+          { required: true, message: '请填写轮播颜色', trigger: 'blur' }
+        ],
+        imgUrl: [
           { required: true, message: '请填写轮播跳转url', trigger: 'blur' }
         ],
         orderNum: [
@@ -189,7 +194,7 @@ export default {
     this.getlist()
   },
   methods: {
-   
+
     // 上传------
     handleExceed(file) {
       this.$message({
@@ -257,16 +262,15 @@ export default {
     addFenleipop() {
       this.title = '添加轮播'
       this.fileList = []
-       this.addEditData= {// 新增、编辑字段
-        img:'',//轮播图
-        imgName:'',//介绍
-        imgUrl:'',	//url
-        orderNum:''//排序
+      this.addEditData = {// 新增、编辑字段
+        img: '', // 轮播图
+        imgName: '', // 介绍
+        imgUrl: '',	// url
+        imgColour: '',	// url
+        orderNum: ''// 排序
       }
       this.addFenleivisible = true
-
     },
-    
 
     /*
     *功能描述：编辑弹出框
@@ -276,18 +280,18 @@ export default {
       this.addFenleivisible = true
       this.fileList = []
       this.title = '编辑轮播'
-       this.addEditData= {// 新增、编辑字段
-        id:e.id,
-        img:e.img,//轮播图
-        imgName:e.imgName,//介绍
-        imgUrl:e.imgUrl,	//url
-        orderNum:e.orderNum//排序
+      this.addEditData = {// 新增、编辑字段
+        id: e.id,
+        img: e.img, // 轮播图
+        imgName: e.imgName, // 介绍
+        imgColour: e.imgColour, // 颜色
+        imgUrl: e.imgUrl,	// url
+        orderNum: e.orderNum// 排序
       }
-     
+
       this.fileList.push({
         url: e.img
       })
-
     },
 
     /*
@@ -298,27 +302,25 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           if (!this.addEditData.id) { // 添加分类
-              addChart(this.addEditData).then(res => {
-                console.log(res)
-                if (res.status) {
-                  this.$message({ message: '添加成功', type: 'success' })
-                  this.addFenleivisible = false
-                  this.getlist()
-                }
-              })
-            
+            addChart(this.addEditData).then(res => {
+              console.log(res)
+              if (res.status) {
+                this.$message({ message: '添加成功', type: 'success' })
+                this.addFenleivisible = false
+                this.getlist()
+              }
+            })
           } else { // 编辑分类
-              updateChart(this.addEditData).then(res => {
-                if (res.status) {
-                  this.$message({ message: '添加成功', type: 'success' })
-                  this.addFenleivisible = false
-                  this.getlist()
-                }
-              })
-            } 
+            updateChart(this.addEditData).then(res => {
+              if (res.status) {
+                this.$message({ message: '添加成功', type: 'success' })
+                this.addFenleivisible = false
+                this.getlist()
+              }
+            })
+          }
         }
       })
-      
     },
 
     /*
@@ -369,8 +371,7 @@ export default {
       console.log(val)
       this.size = val
       this.getlist()
-    },
-   
+    }
 
   }
 }
