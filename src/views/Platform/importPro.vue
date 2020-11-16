@@ -141,13 +141,13 @@
       </el-table>
       <div class="block fenye">
         <el-pagination
-          :current-page="Current"
+          :current-page="CurrentF"
           :page-sizes="[10, 20, 30, 50]"
-          :page-size="Size"
+          :page-size="SizeF"
           layout="total, sizes, prev, pager, next, jumper"
           :total="commTotal"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
+          @size-change="handleSizeChangeF"
+          @current-change="handleCurrentChangeF"
         />
       </div>
     </el-dialog>
@@ -198,7 +198,9 @@ export default {
       Current: 1, // 页码
       total: 0, // 总数
       commList: [], // 商品列表
-      commTotal: [], // 总数
+      SizeF: 10, // 一页多少条
+      CurrentF: 1, // 页码
+      commTotal: 0, // 总数
       time: null,
       type: null,
       loading: false // loading加载
@@ -297,8 +299,8 @@ export default {
         goodsName: _this.query.goodsName,
         goodsTypeId: _this.query.goodsTypeId[_this.query.goodsTypeId.length - 1],
         tradeId: _this.query.industry,
-        current: _this.Current,
-        size: _this.Size
+        current: _this.CurrentF,
+        size: _this.SizeF
       }).then(res => {
         console.log(res)
         if (res.status) {
@@ -358,7 +360,7 @@ export default {
     },
     // 搜索
     searchGoods() {
-      this.Current = 1
+      this.CurrentF = 1
       this.getGoodsList()
     },
     // 分页
@@ -369,6 +371,15 @@ export default {
     handleCurrentChange(val) {
       this.Current = val
       this.getlist()
+    },
+    // 分页
+    handleSizeChangeF(val) {
+      this.SizeF = val
+      this.getGoodsList()
+    },
+    handleCurrentChangeF(val) {
+      this.CurrentF = val
+      this.getGoodsList()
     }
   }
 }
