@@ -84,7 +84,6 @@
         >
           <el-form v-if="addFenleivisible" ref="addEditData" :rules="addEditrules" :model="addEditData" label-width="100px" size="mini">
             <el-row :gutter="10">
-
               <el-form-item label="LOGO：" prop="img">
                 <el-upload
                   ref="upload"
@@ -100,7 +99,9 @@
                   :on-exceed="handleExceed"
                 >
                   <i class="el-icon-plus" />
+                  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
                 </el-upload>
+
               </el-form-item>
             </el-row>
             <el-form-item label="轮播名称：" style="line-height:60px" prop="imgName">
