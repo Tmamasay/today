@@ -1,11 +1,11 @@
 <template>
-  <!-- 课程改造-分类管理 2020-8-10 LRS -->
+  <!-- 打印机管理 -->
   <div class="fenlei_admin_box shaowAll" :style="{height:bodyHeight}">
     <div class="fenlei_admin">
       <div class="top_form">
         <el-form :inline="true" size="mini">
-          <el-form-item label="轮播名称：">
-            <el-input v-model="searchData.name_value" placeholder="请输入轮播名称" />
+          <el-form-item label="设备编号：">
+            <el-input v-model="searchData.deviceSn" placeholder="请输入设备编号" />
           </el-form-item>
           <!-- <el-form-item label="编辑时间：">
             <el-date-picker
@@ -21,7 +21,7 @@
           </el-form-item> -->
           <el-form-item>
             <el-button type="primary" size="mini" icon="el-icon-search" @click="search">搜索</el-button>
-            <el-button type="primary" size="mini" icon="el-icon-plus" @click="addFenleipop">添加轮播</el-button>
+            <el-button type="primary" size="mini" icon="el-icon-plus" @click="addFenleipop">添加设备</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -33,33 +33,21 @@
           style="height:600px;overflow: auto;"
           size="mini"
         >
-          <el-table-column prop="imgName" label="轮播名称" />
-          <el-table-column prop="imgColour" label="轮播颜色" />
-          <el-table-column prop="img" label="图片">
+          <el-table-column prop="deviceSn" label="设备编号" />
+          <el-table-column prop="deviceName" label="设备名称" />
+          <el-table-column prop="status" label="状态">
             <template slot-scope="scope">
-              <div slot="reference" class="name-wrapper">
-                <img
-                  :src="scope.row.img"
-                  alt="无图片"
-                  style="height: 50px; width: 50px;display: block;cursor: pointer;"
-                >
-
-              </div>
-            </template>
-          </el-table-column>
-          <!-- <el-table-column prop="courseCount" label="课程数" align="center" /> -->
-          <el-table-column prop="sort" label="排序" align="center">
-            <template slot-scope="scope">
-              {{ scope.row.orderNum }}
+              <span v-if="scope.row.deviceStatus===0" class="noUseSign">未分配</span>
+              <span v-else-if="scope.row.deviceStatus===1" class="useSign" type="danger">已分配</span>
             </template>
           </el-table-column>
           <!-- <el-table-column prop="updateName" label="编辑者" align="center" /> -->
           <el-table-column prop="createTime" label="创建时间" align="center" />
-          <el-table-column prop="updateTime" label="编辑时间" align="center" />
           <el-table-column prop="operation" label="操作" align="center">
             <template slot-scope="scope">
-              <el-button type="text" size="mini" @click="edit(scope.row)">编辑</el-button>
+              <el-button v-if="scope.row.deviceStatus===0" type="text" size="mini" @click="payChannel(scope.row)">分配设备</el-button>
               <el-button type="text" size="mini" @click="remove(scope.row)">删除</el-button>
+
             </template>
           </el-table-column>
         </el-table>
@@ -84,42 +72,38 @@
           style="width:60%;margin:0 auto"
         >
           <el-form v-if="addFenleivisible" ref="addEditData" :rules="addEditrules" :model="addEditData" label-width="100px" size="mini">
-            <el-row :gutter="10">
-              <el-form-item label="LOGO：" prop="img">
-                <el-upload
-                  ref="upload"
-                  list-type="picture-card"
-                  action
-                  :file-list="fileList"
-                  :show-file-list="true"
-                  :http-request="uploadFile"
-                  accept="image/gif,image/jpeg,image/jpg,image/png,image/svg"
-                  :limit="1"
-                  :on-remove="handleRemove"
-                  :on-change="handlePreview"
-                  :on-exceed="handleExceed"
-                >
-                  <i class="el-icon-plus" />
-                  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-                </el-upload>
+            <el-form-item label="设备编号：" style="line-height:60px" prop="deviceSn">
+              <el-input v-model="addEditData.deviceSn" placeholder="请填写设备编号" style="width:70%;" />
+            </el-form-item>
 
-              </el-form-item>
-            </el-row>
-            <el-form-item label="轮播名称：" style="line-height:60px" prop="imgName">
-              <el-input v-model="addEditData.imgName" placeholder="请填写介绍（轮播图解释）" style="width:100%;" />
-            </el-form-item>
-            <el-form-item label="轮播颜色：" style="line-height:60px" prop="imgColour">
-              <el-input v-model="addEditData.imgColour" placeholder="请填写过度颜色" style="width:100%;" />
-            </el-form-item>
-            <el-form-item label="跳转url：" style="line-height:60px" prop="imgUrl">
-              <el-input v-model="addEditData.imgUrl" placeholder="请填写跳转url" style="width:100%;" />
-            </el-form-item>
-            <el-form-item label="排序：" prop="orderNum">
-              <el-input v-model.number="addEditData.orderNum" placeholder="请填写排序" style="width:100%;" />
-            </el-form-item>
           </el-form>
           <div class="el-center">
             <el-button type="primary" size="mini" @click="onSubmit('addEditData')">提交</el-button>
+            <el-button size="mini" plain @click="addFenleivisible=false">取消</el-button>
+          </div>
+        </el-dialog>
+        <!--分配打印机-->
+        <el-dialog
+          title="分配打印机"
+          :visible.sync="shareVisible"
+          :close-on-click-modal="false"
+          style="width:60%;margin:0 auto"
+        >
+          <el-form v-if="shareVisible" ref="shareForm" :rules="shareRules" :model="shareForm" label-width="100px" size="mini">
+            <el-form-item label="设备备注：" style="line-height:60px" prop="deviceName">
+              <el-input v-model="shareForm.deviceName" placeholder="请填写设备编号" style="width:70%;" />
+            </el-form-item>
+            <el-form-item label="渠道商：" style="line-height:60px" prop="storeId">
+              <el-autocomplete
+                v-model="shareForm.storeId"
+                :fetch-suggestions="querySearchAsync"
+                placeholder="请输入内容"
+                @select="handleSelect"
+              />
+            </el-form-item>
+          </el-form>
+          <div class="el-center">
+            <el-button type="primary" size="mini" @click="onShareSubmit('shareForm')">提交</el-button>
             <el-button size="mini" plain @click="addFenleivisible=false">取消</el-button>
           </div>
         </el-dialog>
@@ -129,8 +113,7 @@
 </template>
 
 <script>
-import { selectChartPage, addChart, updateChart, delChart } from '@/api/user'
-import { fileUpload } from '@/api/chengxu'
+import { pagePrintDevice, addPrintDevice, delPrintDevice, selectStoreList, setPrintStore } from '@/api/user'
 export default {
   data() {
     return {
@@ -140,10 +123,10 @@ export default {
       // 上传中转
       uploadData: '',
       fileList: [],
-
+      shareVisible: false,
       bodyHeight: '', // 获取浏览器的高度，背景色
       searchData: {// 搜索数据
-        name_value: '' // 分类名称
+        deviceSn: '' // 分类名称
 
       },
       tableData: [], // 表格数据
@@ -157,29 +140,28 @@ export default {
       addFenleivisible: false, // 新增分类、编辑弹出框
       title: '', // 新增分类、编辑名字
       addEditData: {// 新增、编辑字段
-        img: '', // 轮播图
-        imgName: '', // 介绍
-        imgUrl: '',	// url
-        imgColour: '',	// 轮播颜色
-        orderNum: ''// 排序
+        deviceSn: '' // 设备编号
+
+      },
+      shareForm: {
+        deviceName: '',
+        id: '',
+        storeId: ''
       },
       addEditrules: {
-        img: [
-          { required: true, message: '请先上传图片', trigger: 'change' }
-        ],
-        imgName: [
-          { required: true, message: '请填写轮播名称', trigger: 'blur' }
-        ],
-        imgColour: [
-          { required: true, message: '请填写轮播颜色', trigger: 'blur' }
-        ],
-        imgUrl: [
-          { required: true, message: '请填写轮播跳转url', trigger: 'blur' }
-        ],
-        orderNum: [
-          { required: true, message: '排序不能为空', trigger: 'blur' },
-          { type: 'number', message: '排序必须为数字值' }
+        deviceSn: [
+          { required: true, message: '请填写设备编号', trigger: 'blur' }
         ]
+
+      },
+      shareRules: {
+        deviceName: [
+          { required: true, message: '请填写设备备注', trigger: 'blur' }
+        ],
+        storeId: [
+          { required: true, message: '请选择渠道商', trigger: 'change' }
+        ]
+
       }
     }
   },
@@ -196,38 +178,46 @@ export default {
     this.getlist()
   },
   methods: {
+    handleSelect(item) {
+      this.shareForm.storeId = item.id
+      console.log(item)
+    },
+    payChannel(row) {
+      this.shareForm = {
+        deviceName: '',
+        id: '',
+        storeId: ''
+      }
+      this.shareVisible = true
+      this.shareForm.id = row.id
+    },
+    querySearchAsync(queryString, cb) {
+      // const _this = this
+      var data = {
 
-    // 上传------
-    handleExceed(file) {
-      this.$message({
-        message: '封面文件只允许上传一张，如需重新上传请删除已存在封面',
-        type: 'warning'
-      })
-    },
-    handleRemove(file) {
-      console.log(file)
-    },
-    uploadFile(e) {
-      fileUpload(this.uploadData).then(res => {
-        if (res) {
-          this.addEditData.img = res.data
-          this.$message({
-            message: '上传成功',
-            type: 'success'
+        current: 0,
+        size: 100,
+        storeName: queryString
+
+      }
+      selectStoreList(data).then(res => {
+        console.log(res)
+        if (res.status) {
+          const Arr_ = []
+          res.data.records.forEach(element => {
+            const Sarr_ = {
+              value: element.storeName,
+              id: element.id
+            }
+            Arr_.push(Sarr_)
           })
-        } else {
-          this.$message.error(res.status)
+          console.log(Arr_)
+          cb(Arr_)
+          // return Arr_
         }
       })
     },
 
-    // 获取上传文件信息
-    handlePreview(file) {
-      const _this = this
-      var formData = new FormData()
-      formData.append('file', file.raw)
-      _this.uploadData = formData
-    },
     // =======
     /*
     *功能描述：获取列表
@@ -236,10 +226,10 @@ export default {
     getlist() {
       const _this = this
       _this.loading = true
-      selectChartPage({
+      pagePrintDevice({
         current: _this.current,
         size: _this.size,
-        imgName: _this.searchData.name_value
+        deviceSn: _this.searchData.deviceSn
       }).then(res => {
         if (res.status) {
           _this.tableData = res.data.records
@@ -262,38 +252,12 @@ export default {
     *开发人员：LRS
     */
     addFenleipop() {
-      this.title = '添加轮播'
+      this.title = '添加设备'
       this.fileList = []
       this.addEditData = {// 新增、编辑字段
-        img: '', // 轮播图
-        imgName: '', // 介绍
-        imgUrl: '',	// url
-        imgColour: '',	// url
-        orderNum: ''// 排序
+        deviceSn: '' // 设备编号
       }
       this.addFenleivisible = true
-    },
-
-    /*
-    *功能描述：编辑弹出框
-    *开发人员：LRS
-    */
-    edit(e) {
-      this.addFenleivisible = true
-      this.fileList = []
-      this.title = '编辑轮播'
-      this.addEditData = {// 新增、编辑字段
-        id: e.id,
-        img: e.img, // 轮播图
-        imgName: e.imgName, // 介绍
-        imgColour: e.imgColour, // 颜色
-        imgUrl: e.imgUrl,	// url
-        orderNum: e.orderNum// 排序
-      }
-
-      this.fileList.push({
-        url: e.img
-      })
     },
 
     /*
@@ -303,24 +267,28 @@ export default {
     onSubmit(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          if (!this.addEditData.id) { // 添加分类
-            addChart(this.addEditData).then(res => {
-              console.log(res)
-              if (res.status) {
-                this.$message({ message: '添加成功', type: 'success' })
-                this.addFenleivisible = false
-                this.getlist()
-              }
-            })
-          } else { // 编辑分类
-            updateChart(this.addEditData).then(res => {
-              if (res.status) {
-                this.$message({ message: '添加成功', type: 'success' })
-                this.addFenleivisible = false
-                this.getlist()
-              }
-            })
-          }
+          addPrintDevice(this.addEditData).then(res => {
+            console.log(res)
+            if (res.status) {
+              this.$message({ message: '添加成功', type: 'success' })
+              this.addFenleivisible = false
+              this.getlist()
+            }
+          })
+        }
+      })
+    },
+    onShareSubmit(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          setPrintStore(this.shareForm).then(res => {
+            console.log(res)
+            if (res.status) {
+              this.$message({ message: '添加成功', type: 'success' })
+              this.shareVisible = false
+              this.getlist()
+            }
+          })
         }
       })
     },
@@ -338,7 +306,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        delChart(data).then(res => {
+        delPrintDevice(data).then(res => {
           console.log(res)
           if (res.status) {
             this.$message({
@@ -381,6 +349,19 @@ export default {
 
 <style scoped>
 
+.useSign{
+
+  padding: 5px 8px;
+  background-color:#00c48f !important;
+ color:#fff ;
+ border-radius: 4px;
+}
+.noUseSign{
+   padding: 5px 8px;
+  background-color:rgb(167, 167, 167) !important;
+ color:#fff ;
+ border-radius: 4px;
+}
 .fenlei_admin_box{
   /* background: #F5F5FA; */
   overflow: hidden;

@@ -88,7 +88,7 @@
       width="30%"
     >
       <!-- <EditorImage v-if="dialogVisible" :value="content" @editlisten="geteditS" /> -->
-      <el-form v-if="dialogVisible" ref="addClassfy" label-width="140px" :model="addClassfy" :rules="rulesClassL">
+      <el-form v-if="dialogVisible" ref="addClassfy" label-width="50px" :model="addClassfy" :rules="rulesClassL">
         <el-form-item label="行业" prop="className">
           <el-input v-model="addClassfy.className" placeholder="请输入行业" />
         </el-form-item>
@@ -189,14 +189,22 @@ export default {
       })
     },
     removeZX(row) {
-      delTrade({
-        id: row.id
+      const that = this
+      this.$confirm('此操作将删除该分类, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        delTrade({
+          id: row.id
         // tradeName: row.tradeName
-      }).then(res => {
-        if (res.status) {
-          this.$message({ message: '操作成功', type: 'success' })
-          this.getlist()
-        }
+        }).then(res => {
+          if (res.status) {
+            that.$message({ message: '操作成功', type: 'success' })
+            that.getlist()
+            that.getClassList()
+          }
+        })
       })
     },
     goEdit(row) {
@@ -220,6 +228,7 @@ export default {
                 _this.$message({ message: '操作成功', type: 'success' })
                 _this.dialogVisible = false
                 _this.getlist()
+                _this.getClassList()
               }
             })
           } else {
@@ -232,6 +241,7 @@ export default {
                 _this.$message({ message: '操作成功', type: 'success' })
                 _this.dialogVisible = false
                 _this.getlist()
+                _this.getClassList()
               }
             })
           }

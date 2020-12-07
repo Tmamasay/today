@@ -2,9 +2,24 @@
   <div class="xfjl_box shaowAll">
     <div class="toolS">
       <el-button type="primary" style="margin-bottom:20px" @click="addZx">新增渠道商</el-button>
-      <el-form :inline="true" class="demo-form-inline">
-        <el-form-item label="">
-          <el-input v-model="userName" placeholder="请输入管理员" />
+      <el-form :inline="true" :model="query" class="demo-form-inline">
+        <el-form-item label="渠道商名称">
+          <el-input v-model="query.storeName" placeholder="请输入渠道商名称" />
+        </el-form-item>
+        <el-form-item label="店铺名称(真实的)">
+          <el-input v-model="query.storeRealName" placeholder="请输入店铺名称(真实的)" />
+        </el-form-item>
+        <el-form-item label="联系人">
+          <el-input v-model="query.userName" placeholder="请输入联系人" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="query.mobile" placeholder="请输入手机号" />
+        </el-form-item>
+        <el-form-item label="行业类别">
+          <el-select v-model="query.tradeTypeId" placeholder="请选择" style="width:92%">
+            <el-option label="请选择" value="" />
+            <el-option v-for="item in options" :key="item.id" :label="item.tradeName" :value="item.id" />
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="sousuo">搜索</el-button>
@@ -39,7 +54,8 @@
       </el-table-column>
       <el-table-column prop="rate" label="手续费率">
         <template slot-scope="scope">
-          {{ (scope.row.rate/100).toFixed(2) }}%
+          <!-- {{ (scope.row.rate/100).toFixed(2) }}% -->
+          {{ scope.row.rate }}%
         </template>
       </el-table-column>
       <el-table-column prop="storeRealName" label="实体店名字" />
@@ -86,25 +102,25 @@
           <el-input v-model="yhData.account" placeholder="请输入渠道商账号" />
         </el-form-item>
         <el-form-item label="行业类别" prop="industry">
-          <el-select v-model="yhData.industry" placeholder="请选择" style="width:90%">
+          <el-select v-model="yhData.industry" placeholder="请选择" style="width:92%">
             <el-option v-for="item in options" :key="item.id" :label="item.tradeName" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="菜单等级" style="margin-left:-15px">
-          <el-select v-model="yhData.menuLevel" placeholder="请选择" style="width:90%">
+          <el-select v-model="yhData.menuLevel" placeholder="请选择" style="width:92%">
             <el-option label="一级" value="0" />
             <el-option label="二级" value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item label="渠道商等级" prop="grade" style="margin-left:-15px">
-          <el-select v-model="yhData.grade" placeholder="请选择" style="width:90%">
+        <el-form-item label="渠道商等级" prop="grade">
+          <el-select v-model="yhData.grade" placeholder="请选择" style="width:92%">
             <el-option label="V1" value="1" />
             <el-option label="V2" value="2" />
             <el-option label="V3" value="3" />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="实体店名称" prop="entityName">
+        <el-form-item label="实体店名称" prop="entityName" style="margin-left:-15px">
           <el-input v-model="yhData.entityName" placeholder="请输入实体店名" />
         </el-form-item>
         <el-form-item label="实体店地址" prop="entityAdress">
@@ -112,7 +128,7 @@
           <el-input v-model="yhData.entityAdress" placeholder="请输入实体店地址" />
         </el-form-item>
         <el-form-item label="联系人" prop="contacts">
-          <el-input v-model="yhData.contacts" placeholder="请输入联系人" />
+          <el-input v-model="yhData.contacts" placeholder="请输入微信绑定真实姓名" />
         </el-form-item>
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="yhData.phone" placeholder="请输入联系电话" />
@@ -288,6 +304,13 @@ export default {
       }
     }
     return {
+      query: {
+        mobile: '', // 手机号
+        storeName: '', // 渠道商名称
+        storeRealName: '', // 店铺名称(真实的)
+        userName: '', // 联系人
+        tradeTypeId: ''// 行业类别
+      },
       // 关于轮播
       dialogVisible_lb: false,
       dialogVisible_nolb: false,
@@ -333,7 +356,7 @@ export default {
           { required: true, message: '请输入实体店地址', trigger: 'blur' }
         ],
         contacts: [
-          { required: true, message: '请输入联系人', trigger: 'blur' }
+          { required: true, message: '请输入微信绑定真实姓名', trigger: 'blur' }
         ],
         phone: [
           { required: true, trigger: 'blur', validator: validatePhone }
@@ -372,6 +395,7 @@ export default {
   },
   mounted() {
     this.getlist()
+    this.getTradeList()
   },
   methods: {
     /*
@@ -496,15 +520,22 @@ export default {
       }
     },
     removeZX(row) {
-      disableStoreOne({
-        storeId: row.id,
-        status: row.status === 'USE' ? 1 : 0
+      const that = this
+      this.$confirm('此操作将操作渠道商的登陆权限, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        disableStoreOne({
+          storeId: row.id,
+          status: row.status === 'USE' ? 1 : 0
 
-      }).then(res => {
-        if (res.status) {
-          this.$message({ message: '操作成功', type: 'success' })
-          this.getlist()
-        }
+        }).then(res => {
+          if (res.status) {
+            that.$message({ message: '操作成功', type: 'success' })
+            that.getlist()
+          }
+        })
       })
     },
     async addUser(formName) {
@@ -564,7 +595,7 @@ export default {
       })
     },
     goEdit(row) {
-      this.getTradeList()
+      // this.getTradeList()
       getStoreOne({
         storeId: row.id
       }).then(res => {
@@ -610,7 +641,7 @@ export default {
         fee: '', // 手续费率
         password: '' // 登陆密码
       }
-      this.getTradeList()
+      // this.getTradeList()
     },
     goDetail(e, v) {
       this.$router.push({ path: '/detial', query: { companyStatus: e, customerId: v }})
@@ -627,12 +658,16 @@ export default {
       const _this = this
       _this.loading = true
       var data = {
-        param: {
-          // userName: _this.userName,
-          current: _this.Current,
-          size: _this.Size
 
-        }
+        // userName: _this.userName,
+        current: _this.Current,
+        size: _this.Size,
+        mobile: _this.query.mobile, // 手机号
+        storeName: _this.query.storeName, // 渠道商名称
+        storeRealName: _this.query.storeRealName, // 店铺名称(真实的)
+        userName: _this.query.userName, // 联系人
+        tradeTypeId: _this.query.tradeTypeId// 行业类别
+
       }
       selectStoreList(data).then(res => {
         console.log(res)

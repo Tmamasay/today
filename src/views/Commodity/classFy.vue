@@ -63,7 +63,7 @@
       width="30%"
     >
       <!-- <EditorImage v-if="dialogVisible" :value="content" @editlisten="geteditS" /> -->
-      <el-form v-if="dialogVisible" ref="addClassfy" :label-position="labelPosition" label-width="140px" :model="addClassfy" :rules="rulesClass">
+      <el-form v-if="dialogVisible" ref="addClassfy" :label-position="labelPosition" label-width="50px" :model="addClassfy" :rules="rulesClass">
         <el-form-item label="行业" prop="className">
           <el-input v-model="addClassfy.className" placeholder="请输入行业" />
         </el-form-item>

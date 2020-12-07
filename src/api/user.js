@@ -274,3 +274,35 @@ export function setStoreChart(data) {
     data
   })
 }
+// 新增设备
+export function addPrintDevice(data) {
+  return request({
+    url: '/admin/printDeviceManager/addPrintDevice',
+    method: 'post',
+    data
+  })
+}
+// 删除设备
+export function delPrintDevice(data) {
+  return request({
+    url: '/admin/printDeviceManager/delPrintDevice',
+    method: 'post',
+    data
+  })
+}
+// 设备分页
+export function pagePrintDevice(data) {
+  return request({
+    url: '/admin/printDeviceManager/pagePrintDevice',
+    method: 'post',
+    data
+  })
+}
+// 将设备分配到渠道商
+export function setPrintStore(data) {
+  return request({
+    url: '/admin/printDeviceManager/setPrintStore',
+    method: 'post',
+    data
+  })
+}
