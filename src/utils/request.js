@@ -27,6 +27,7 @@ service.interceptors.request.use(
       // 请根据实际情况修改
       // config.headers['access_token'] = getToken()
       config.headers['Authorization'] = getToken()
+      config.headers['tokenType'] = 'admin'
       // config.headers['refresh_token'] = getRefreshToken()
     }
     needLoadingRequestCount++
