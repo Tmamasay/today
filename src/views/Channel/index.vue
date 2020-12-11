@@ -2,7 +2,7 @@
   <div class="xfjl_box shaowAll">
     <div class="toolS">
       <el-button type="primary" style="margin-bottom:20px" @click="addZx">新增渠道商</el-button>
-      <el-form :inline="true" :model="query" class="demo-form-inline">
+      <el-form :inline="true" :model="query" size="small" class="demo-form-inline">
         <el-form-item label="渠道商名称">
           <el-input v-model="query.storeName" placeholder="请输入渠道商名称" />
         </el-form-item>
@@ -68,6 +68,7 @@
         width="230"
       >
         <template slot-scope="scope">
+          <span style="color:#00c48f;cursor: pointer;" @click="goSCode(scope.row)">店铺二维码</span>
           <span style="color:#00c48f;cursor: pointer;" @click="goEdit(scope.row)">编辑</span>
           <span style="color:#00c48f;cursor: pointer;" @click="goHasLunbo(scope.row)">已有轮播</span>
           <span style="color:#00c48f;cursor: pointer;" @click="goNoLunbo(scope.row)">关联轮播</span>
@@ -230,11 +231,23 @@
         </el-table>
       </div>
     </el-dialog>
+    <!-- 店铺二维码 -->
+    <el-dialog
+      title="店铺二维码"
+      :visible.sync="dialogVisible_SCode"
+      :close-on-click-modal="false"
+      width="40%"
+    >
+      <div class="SCodeIM">
+        <img :src="scodeUrl" alt="" srcset="">
+      </div>
+      <el-button type="text" size="mini" @click="downLoad(scodeUrl)">下载</el-button>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { delStoreChart, getStoreChart, selectNoChartByStoreId, setStoreChart, addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne, getStoreOne, updateStoreOne } from '@/api/user'
+import { generateStoreCode, delStoreChart, getStoreChart, selectNoChartByStoreId, setStoreChart, addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne, getStoreOne, updateStoreOne } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
 export default {
   data() {
@@ -312,6 +325,8 @@ export default {
         tradeTypeId: ''// 行业类别
       },
       // 关于轮播
+      dialogVisible_SCode: false,
+      scodeUrl: '',
       dialogVisible_lb: false,
       dialogVisible_nolb: false,
       tableData: [],
@@ -398,6 +413,17 @@ export default {
     this.getTradeList()
   },
   methods: {
+    downLoad(scodeUrl) {
+      var a = document.createElement('a')
+      a.download = '店铺小程序码'
+      // 设置图片地址
+      a.href = scodeUrl
+      a.click()
+    },
+    goSCode(row) {
+      this.dialogVisible_SCode = true
+      this.generateStoreCode(row.id)
+    },
     /*
     *功能描述：删除分类
     *开发人员：LRS
@@ -474,6 +500,21 @@ export default {
       this.dialogVisible_lb = true
       this.putStoreId = row.id
       this.getHasLbList(row.id)
+    },
+    // 店铺二维吗
+    generateStoreCode(id) {
+      const _this = this
+      _this.loading = true
+      generateStoreCode({
+        storeId: id
+      }).then(res => {
+        if (res.status) {
+          _this.scodeUrl = res.data
+          setTimeout(() => {
+            _this.loading = false
+          }, 300)
+        }
+      })
     },
     /*
     *功能描述：获取列表
@@ -719,6 +760,15 @@ export default {
 </script>
 
 <style scoped>
+.SCodeIM{
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+}
+.SCodeIM img{
+  width: 100%;
+  height: 100%;
+}
 .useSign{
 
   padding: 5px 8px;

@@ -306,3 +306,11 @@ export function setPrintStore(data) {
     data
   })
 }
+// 生成二维码
+export function generateStoreCode(data) {
+  return request({
+    url: '/admin/storeManager/generateStoreCode',
+    method: 'post',
+    data
+  })
+}
