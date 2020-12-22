@@ -34,6 +34,7 @@
           size="mini"
         >
           <el-table-column prop="deviceSn" label="设备编号" />
+          <el-table-column prop="storeId" label="店铺ID" />
           <el-table-column prop="deviceName" label="设备名称" />
           <el-table-column prop="status" label="状态">
             <template slot-scope="scope">
