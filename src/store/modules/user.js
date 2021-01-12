@@ -233,6 +233,7 @@ const actions = {
       removeInfo()
       removecustomerId()
       localStorage.removeItem('buttons')
+      location.reload()
       resolve()
     })
   }
