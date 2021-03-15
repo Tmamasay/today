@@ -74,6 +74,7 @@
           <span style="color:#00c48f;cursor: pointer;" @click="goNoLunbo(scope.row)">关联轮播</span>
           <span v-if="scope.row.status==='USE'" style="color:red;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">冻结</span>
           <span v-if="scope.row.status==='STOP'" style="color:#00c48f;cursor: pointer;padding-left:10px" @click="removeZX(scope.row)">解冻</span>
+          <span style="color:#00c48f;cursor: pointer;" @click="goGg(scope.row)">公告信息</span>
         </template>
       </el-table-column>
     </el-table>
@@ -243,13 +244,28 @@
       </div>
       <el-button type="text" size="mini" @click="downLoad(scodeUrl)">下载</el-button>
     </el-dialog>
+    <!--公示信息-->
+    <el-dialog
+      title="店铺公示信息"
+      :visible.sync="dialogVisible_Gs"
+      :close-on-click-modal="false"
+      width="50%"
+    >
+      <div v-if="dialogVisible_Gs" style="height:530px">
+        <EditorImage :value="GsCont" @editlisten="geteditS" />
+      </div>
+      <el-button type="primary" size="medium" style="margin-left:430px" @click="makeSurGs">确    定</el-button>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { generateStoreCode, delStoreChart, getStoreChart, selectNoChartByStoreId, setStoreChart, addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne, getStoreOne, updateStoreOne } from '@/api/user'
+import { getStorePublicInfo, addOrUpdatePublicInfo, generateStoreCode, delStoreChart, getStoreChart, selectNoChartByStoreId, setStoreChart, addStore, getTradeList, checkAddStore, selectStoreList, disableStoreOne, getStoreOne, updateStoreOne } from '@/api/user'
 // import { ttyMD5 } from '@/utils'
+import EditorImage from '@/components/Tinymce/index' // 富文本编辑
+
 export default {
+  components: { EditorImage },
   data() {
     const validatePhone = (rule, value, callback) => {
       const reg = /^1([38][0-9]|4[579]|5[0-3,5-9]|6[6]|7[0135678]|9[89])\d{8}$/
@@ -324,6 +340,7 @@ export default {
         userName: '', // 联系人
         tradeTypeId: ''// 行业类别
       },
+      dialogVisible_Gs: false,
       // 关于轮播
       dialogVisible_SCode: false,
       scodeUrl: '',
@@ -405,7 +422,10 @@ export default {
       totalL: 0, // 总数
       time: null,
       type: null,
-      loading: false // loading加载
+      loading: false, // loading加载
+      GsData: null,
+      GsCont: null,
+      storeIdGs: ''
     }
   },
   mounted() {
@@ -413,6 +433,48 @@ export default {
     this.getTradeList()
   },
   methods: {
+    makeSurGs() {
+      const _this = this
+      _this.loading = true
+      addOrUpdatePublicInfo({
+        content: _this.GsCont,
+        id: _this.GsData ? _this.GsData.id : '',
+        isShow: 1,
+        storeId: _this.storeIdGs
+      }).then(res => {
+        if (res.status) {
+          _this.GsCont = null
+          _this.dialogVisible_Gs = false
+          setTimeout(() => {
+            _this.loading = false
+          }, 300)
+        }
+      })
+    },
+    goGg(row) {
+      const _this = this
+      _this.loading = true
+      _this.storeIdGs = row.id
+      _this.dialogVisible_Gs = true
+      _this.GsCont = null
+      getStorePublicInfo({
+        storeId: row.id
+      }).then(res => {
+        if (res.status) {
+          _this.GsData = res.data
+          if (res.data) {
+            _this.GsCont = res.data.content
+          }
+
+          setTimeout(() => {
+            _this.loading = false
+          }, 300)
+        }
+      })
+    },
+    geteditS(data) {
+      this.GsCont = data
+    },
     downLoad(scodeUrl) {
       var a = document.createElement('a')
       a.download = '店铺小程序码'

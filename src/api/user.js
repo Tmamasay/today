@@ -314,3 +314,21 @@ export function generateStoreCode(data) {
     data
   })
 }
+
+// 查询渠道商公示信息
+export function getStorePublicInfo(data) {
+  return request({
+    url: '/admin/storeManager/getStorePublicInfo',
+    method: 'post',
+    data
+  })
+}
+
+// 新增或修改渠道商公示信息
+export function addOrUpdatePublicInfo(data) {
+  return request({
+    url: '/admin/storeManager/addOrUpdatePublicInfo',
+    method: 'post',
+    data
+  })
+}
